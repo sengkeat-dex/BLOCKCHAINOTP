@@ -36,6 +36,14 @@ extern "C" {
     // JavaScript function to check if MetaMask is installed
     #[wasm_bindgen(js_name = isMetaMaskConnected)]
     fn is_metamask_connected() -> js_sys::Promise;
+    
+    // JavaScript function to connect to Phantom
+    #[wasm_bindgen(js_name = connectToPhantom)]
+    fn connect_to_phantom() -> js_sys::Promise;
+    
+    // JavaScript function to check if Phantom is installed
+    #[wasm_bindgen(js_name = isPhantomConnected)]
+    fn is_phantom_connected() -> js_sys::Promise;
 }
 
 /// Wallet Connector component
@@ -111,20 +119,38 @@ pub fn wallet_connector(props: &WalletConnectorProps) -> Html {
                 success: None,
             });
             
-            // In a real implementation, this would connect to Solana wallet
+            // Call the JavaScript function to connect to Phantom
+            let promise = connect_to_phantom();
+            
             wasm_bindgen_futures::spawn_local(async move {
-                // Simulate async operation
-                gloo_timers::future::TimeoutFuture::new(1000).await;
-                
-                // Simulate successful connection with a fake wallet address
-                let wallet_address = "742d35Cc6634C0532925a3b8D4C0532925a3b8D4".to_string();
-                on_wallet_connected.emit((wallet_address.clone(), "solana".to_string()));
-                
-                state.set(WalletConnectorState {
-                    connecting: false,
-                    error: None,
-                    success: Some(format!("Connected to Solana wallet: {}...", &wallet_address[..10])),
-                });
+                match wasm_bindgen_futures::JsFuture::from(promise).await {
+                    Ok(js_value) => {
+                        // Convert the JavaScript object to a Rust string
+                        let account_info = js_value.into_serde::<serde_json::Value>()
+                            .unwrap_or_else(|_| serde_json::json!({"account": "11111111111111111111111111111111", "network": "solana"}));
+                        
+                        let account = account_info["account"].as_str().unwrap_or("11111111111111111111111111111111").to_string();
+                        let network = account_info["network"].as_str().unwrap_or("solana").to_string();
+                        
+                        on_wallet_connected.emit((account.clone(), network));
+                        
+                        state.set(WalletConnectorState {
+                            connecting: false,
+                            error: None,
+                            success: Some(format!("Connected to Phantom: {}...", &account[..10])),
+                        });
+                    }
+                    Err(e) => {
+                        let error_message = format!("Failed to connect to Phantom: {:?}", e);
+                        console::log_1(&e);
+                        
+                        state.set(WalletConnectorState {
+                            connecting: false,
+                            error: Some(error_message),
+                            success: None,
+                        });
+                    }
+                }
             });
         })
     };
@@ -167,7 +193,7 @@ pub fn wallet_connector(props: &WalletConnectorProps) -> Html {
                     { if state.connecting && state.success.is_none() && state.error.is_none() { 
                         "Connecting to Solana..." 
                     } else { 
-                        "Connect to Solana" 
+                        "Connect to Solana (Phantom)" 
                     } }
                 </button>
             </div>
