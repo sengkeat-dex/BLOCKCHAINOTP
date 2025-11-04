@@ -10,6 +10,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+// Add the MCP server modules
+pub mod mcp_server;
+pub mod mcp_handler;
+
 /// Shared application state backing the Axum router.
 #[derive(Clone, Default)]
 pub struct AppState {

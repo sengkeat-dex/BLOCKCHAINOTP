@@ -1,0 +1,49 @@
+{
+  "networks": {
+    "ethereum": {
+      "mainnet": {
+        "rpcUrl": "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+        "chainId": 1,
+        "gasPrice": "auto",
+        "gasLimit": 5000000
+      },
+      "goerli": {
+        "rpcUrl": "https://goerli.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+        "chainId": 5,
+        "gasPrice": "auto",
+        "gasLimit": 5000000
+      },
+      "localhost": {
+        "rpcUrl": "http://127.0.0.1:8545",
+        "chainId": 31337,
+        "gasPrice": "auto",
+        "gasLimit": 5000000
+      }
+    },
+    "solana": {
+      "mainnet": {
+        "rpcUrl": "https://api.mainnet-beta.solana.com",
+        "commitment": "confirmed"
+      },
+      "devnet": {
+        "rpcUrl": "https://api.devnet.solana.com",
+        "commitment": "confirmed"
+      },
+      "localhost": {
+        "rpcUrl": "http://127.0.0.1:8899",
+        "commitment": "confirmed"
+      }
+    }
+  },
+  "deployment": {
+    "issuer": "0x0000000000000000000000000000000000000000",
+    "admin": "0x0000000000000000000000000000000000000000",
+    "timeout": 3600,
+    "maxAttempts": 3
+  },
+  "security": {
+    "requireDifferentRoles": true,
+    "validateDeployerSeparation": true,
+    "enableEmergencyPause": true
+  }
+}

@@ -9,7 +9,11 @@ forge fmt
 forge build
 forge test
 forge script script/DeployOtpVerifier.s.sol:DeployOtpVerifier \
-  --sig "deploy(address)" <issuer_address> --rpc-url $RPC_URL --private-key $PK --broadcast
+  --sig "deploy(address,address)" <issuer_address> <admin_multisig> \
+  --rpc-url $RPC_URL --private-key $PK --broadcast
 ```
 
-`foundry.toml` pins Solidity to 0.8.20 for parity with the rest of the workspace.
+`foundry.toml` pins Solidity to 0.8.20 for parity with the rest of the workspace. The verifier contract
+enforces a three-attempt limit, domain-separated OTP hashing (`"OTP:v1"` prefix), and separates the
+relayer (`issuer`) from the governance multisig (`admin`) that can rotate issuers, pause issuance, and
+clean up exhausted requests.

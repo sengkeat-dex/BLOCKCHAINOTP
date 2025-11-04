@@ -31,6 +31,7 @@ compile_error!(
 pub struct OtpEntry {
     pub hash: [u8; 32],
     pub expiry: u64,
+    pub attempts: u8,
     pub used: bool,
 }
 
@@ -49,7 +50,7 @@ impl<M: Middleware> OtpVerifierContract<M> {
     pub fn new(address: Address, client: Arc<M>) -> Self {
         // ABI for the OtpVerifier contract
         // In a real implementation, this would be generated from the Solidity contract
-        let abi = r#"[{"inputs":[{"internalType":"address","name":"_issuer","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":"false","inputs":[{"indexed":"true","internalType":"address","name":"oldIssuer","type":"address"},{"indexed":"true","internalType":"address","name":"newIssuer","type":"address"}],"name":"IssuerChanged","type":"event"},{"anonymous":"false","inputs":[{"indexed":"true","internalType":"bool","name":"paused","type":"bool"}],"name":"Paused","type":"event"},{"anonymous":"false","inputs":[{"indexed":"true","internalType":"bytes32","name":"requestId","type":"bytes32"},{"indexed":"false","internalType":"uint64","name":"expiry","type":"uint64"}],"name":"OtpSet","type":"event"},{"anonymous":"false","inputs":[{"indexed":"true","internalType":"bytes32","name":"requestId","type":"bytes32"},{"indexed":"true","internalType":"address","name":"by","type":"address"}],"name":"OtpVerified","type":"event"},{"inputs":[{"internalType":"bytes32","name":"requestId","type":"bytes32"},{"internalType":"bytes32","name":"otpHash","type":"bytes32"},{"internalType":"uint64","name":"expiry","type":"uint64"}],"name":"setOtp","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"requestId","type":"bytes32"},{"internalType":"string","name":"otp","type":"string"}],"name":"verify","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"_paused","type":"bool"}],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newIssuer","type":"address"}],"name":"setIssuer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"entries","outputs":[{"internalType":"bytes32","name":"hash","type":"bytes32"},{"internalType":"uint64","name":"expiry","type":"uint64"},{"internalType":"bool","name":"used","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"issuer","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}]"#;
+        let abi = r#"[{"inputs":[{"internalType":"address","name":"_issuer","type":"address"},{"internalType":"address","name":"_admin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"requestId","type":"bytes32"},{"indexed":false,"internalType":"uint8","name":"attemptsMade","type":"uint8"}],"name":"AttemptRecorded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"oldAdmin","type":"address"},{"indexed":true,"internalType":"address","name":"newAdmin","type":"address"}],"name":"AdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"requestId","type":"bytes32"}],"name":"OtpLocked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"requestId","type":"bytes32"},{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"OtpCleared","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"requestId","type":"bytes32"},{"indexed":false,"internalType":"uint64","name":"expiry","type":"uint64"}],"name":"OtpSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"requestId","type":"bytes32"},{"indexed":true,"internalType":"address","name":"by","type":"address"}],"name":"OtpVerified","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"oldIssuer","type":"address"},{"indexed":true,"internalType":"address","name":"newIssuer","type":"address"}],"name":"IssuerChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"paused","type":"bool"}],"name":"Paused","type":"event"},{"inputs":[{"internalType":"bytes32","name":"requestId","type":"bytes32"},{"internalType":"bytes32","name":"otpHash","type":"bytes32"},{"internalType":"uint64","name":"expiry","type":"uint64"}],"name":"setOtp","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"requestId","type":"bytes32"},{"internalType":"string","name":"otp","type":"string"}],"name":"verify","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"requestId","type":"bytes32"}],"name":"cleanup","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newIssuer","type":"address"}],"name":"setIssuer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newAdmin","type":"address"}],"name":"setAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bool","name":"_paused","type":"bool"}],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"issuer","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"admin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_ATTEMPTS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"entries","outputs":[{"internalType":"bytes32","name":"hash","type":"bytes32"},{"internalType":"uint64","name":"expiry","type":"uint64"},{"internalType":"uint8","name":"attempts","type":"uint8"},{"internalType":"bool","name":"used","type":"bool"}],"stateMutability":"view","type":"function"}]"#;
 
         let contract = Contract::new(
             address,
@@ -106,9 +107,9 @@ impl<M: Middleware> OtpVerifierContract<M> {
     pub fn entries(
         &self,
         request_id: [u8; 32],
-    ) -> Result<ContractCall<M, (Vec<u8>, u64, bool)>, ContractError<M>> {
+    ) -> Result<ContractCall<M, (Vec<u8>, u64, u8, bool)>, ContractError<M>> {
         self.contract
-            .method::<_, (Vec<u8>, u64, bool)>("entries", (request_id,))
+            .method::<_, (Vec<u8>, u64, u8, bool)>("entries", (request_id,))
             .map_err(ContractError::AbiError)
     }
 
@@ -123,6 +124,34 @@ impl<M: Middleware> OtpVerifierContract<M> {
     pub fn paused(&self) -> Result<ContractCall<M, bool>, ContractError<M>> {
         self.contract
             .method::<_, bool>("paused", ())
+            .map_err(ContractError::AbiError)
+    }
+
+    /// Creates a call to read the admin address
+    pub fn admin(&self) -> Result<ContractCall<M, Address>, ContractError<M>> {
+        self.contract
+            .method::<_, Address>("admin", ())
+            .map_err(ContractError::AbiError)
+    }
+
+    /// Creates a constant call to read MAX_ATTEMPTS.
+    pub fn max_attempts(&self) -> Result<ContractCall<M, u8>, ContractError<M>> {
+        self.contract
+            .method::<_, u8>("MAX_ATTEMPTS", ())
+            .map_err(ContractError::AbiError)
+    }
+
+    /// Builds a transaction for `cleanup`
+    pub fn cleanup(&self, request_id: [u8; 32]) -> Result<ContractCall<M, ()>, ContractError<M>> {
+        self.contract
+            .method::<_, ()>("cleanup", (request_id,))
+            .map_err(ContractError::AbiError)
+    }
+
+    /// Builds a transaction for `setAdmin`
+    pub fn set_admin(&self, new_admin: Address) -> Result<ContractCall<M, ()>, ContractError<M>> {
+        self.contract
+            .method::<_, ()>("setAdmin", (new_admin,))
             .map_err(ContractError::AbiError)
     }
 }
@@ -191,7 +220,7 @@ where
     }
 
     async fn get_entry(&self, request_id: [u8; 32]) -> Result<OtpEntry, OtpChainError> {
-        let (hash_vec, expiry, used) = self
+        let (hash_vec, expiry, attempts, used) = self
             .entries(request_id)
             .map_err(evm_err)?
             .call()
@@ -202,7 +231,12 @@ where
         let copy_len = hash_vec.len().min(32);
         hash[..copy_len].copy_from_slice(&hash_vec[..copy_len]);
 
-        Ok(OtpEntry { hash, expiry, used })
+        Ok(OtpEntry {
+            hash,
+            expiry,
+            attempts,
+            used,
+        })
     }
 }
 
@@ -295,6 +329,7 @@ enum SolanaOtpInstruction {
 struct SolanaOtpAccount {
     hash: [u8; 32],
     expiry: u64,
+    attempts: u8,
     used: bool,
 }
 
@@ -354,6 +389,7 @@ impl SolanaContext {
         Ok(OtpEntry {
             hash: account.hash,
             expiry: account.expiry,
+            attempts: account.attempts,
             used: account.used,
         })
     }

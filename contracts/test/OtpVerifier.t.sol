@@ -4,98 +4,218 @@ pragma solidity ^0.8.20;
 import "./utils/TestBase.sol";
 import "../src/OtpVerifier.sol";
 
-contract NonIssuerCaller {
-    function trySet(OtpVerifier verifier, bytes32 requestId, bytes32 otpHash, uint64 expiry)
-        external
-        returns (bool success)
-    {
-        try verifier.setOtp(requestId, otpHash, expiry) {
-            success = true;
-        } catch {
-            success = false;
-        }
-    }
-}
-
 contract OtpVerifierTest is TestBase {
     OtpVerifier private verifier;
-    NonIssuerCaller private attacker;
+    address private issuer = address(0xBEEF);
+    address private admin = address(this);
 
     function setUp() public {
-        verifier = new OtpVerifier(address(this));
-        attacker = new NonIssuerCaller();
+        verifier = new OtpVerifier(issuer, admin);
     }
 
-    function testInitialIssuer() public {
-        assertEq(verifier.issuer(), address(this), "issuer should default to deployer");
+    function testInitialRolesConfigured() public {
+        assertEq(verifier.issuer(), issuer, "issuer mismatch");
+        assertEq(verifier.admin(), admin, "admin mismatch");
+        assertTrue(!verifier.paused(), "contract should start unpaused");
     }
 
-    function testSetOtpAndVerify() public {
-        bytes32 requestId = keccak256("REQ1");
-        bytes32 otpHash = keccak256(abi.encodePacked("123456"));
+    function testSetOtpAndVerifySuccess() public {
+        bytes32 requestId = keccak256("REQ_SUCCESS");
         uint64 expiry = uint64(block.timestamp + 60);
 
-        verifier.setOtp(requestId, otpHash, expiry);
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
         bool ok = verifier.verify(requestId, "123456");
-        assertTrue(ok, "otp should verify");
-        assertEq(verifier.entries(requestId).used, true, "entry should be marked used");
+        assertTrue(ok, "verification should succeed");
+
+        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
+        assertTrue(entry.used, "entry should be marked used");
+        assertEq(entry.attempts, 0, "attempts should stay zero");
     }
 
-    function testDuplicateRequestFails() public {
-        bytes32 requestId = keccak256("REQ2");
-        bytes32 otpHash = keccak256(abi.encodePacked("654321"));
+    function testSetOtpRequiresIssuer() public {
+        bytes32 requestId = keccak256("REQ_ISSUER");
         uint64 expiry = uint64(block.timestamp + 60);
 
-        verifier.setOtp(requestId, otpHash, expiry);
-        bool reverted;
-        try verifier.setOtp(requestId, otpHash, expiry) {
-            reverted = false;
-        } catch {
-            reverted = true;
-        }
-        assertEq(reverted, true, "duplicate entries must fail");
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Unauthorized.selector, address(this)));
+        verifier.setOtp(requestId, _hash("123456"), expiry);
     }
 
-    function testVerifyRejectsWrongOtp() public {
-        bytes32 requestId = keccak256("REQ3");
-        bytes32 otpHash = keccak256(abi.encodePacked("000111"));
+    function testSetOtpRejectsInvalidExpiry() public {
+        bytes32 requestId = keccak256("REQ_EXP");
+        uint64 expiry = uint64(block.timestamp);
+
+        uint64 currentTime = uint64(block.timestamp);
+
+        vm.prank(issuer);
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidExpiry.selector, expiry, currentTime));
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+    }
+
+    function testSetOtpRejectsDuplicateRequest() public {
+        bytes32 requestId = keccak256("REQ_DUP");
         uint64 expiry = uint64(block.timestamp + 60);
-        verifier.setOtp(requestId, otpHash, expiry);
 
-        bool reverted;
-        try verifier.verify(requestId, "111000") {
-            reverted = false;
-        } catch {
-            reverted = true;
-        }
-        assertEq(reverted, true, "wrong otp should revert");
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
+        vm.prank(issuer);
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.EntryExists.selector, requestId));
+        verifier.setOtp(requestId, _hash("654321"), expiry);
     }
 
-    function testPauseBlocksIssuance() public {
+    function testVerifyRejectsUnknownRequest() public {
+        bytes32 requestId = keccak256("REQ_UNKNOWN");
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.UnknownRequest.selector, requestId));
+        verifier.verify(requestId, "123456");
+    }
+
+    function testVerifyRejectsExpiredRequest() public {
+        bytes32 requestId = keccak256("REQ_EXPIRED");
+        uint64 expiry = uint64(block.timestamp + 1);
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
+        vm.warp(block.timestamp + 2);
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.EntryExpired.selector, requestId, expiry));
+        verifier.verify(requestId, "123456");
+    }
+
+    function testVerifyRejectsAlreadyUsedRequest() public {
+        bytes32 requestId = keccak256("REQ_USED");
+        uint64 expiry = uint64(block.timestamp + 60);
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        verifier.verify(requestId, "123456");
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.EntryUsed.selector, requestId));
+        verifier.verify(requestId, "123456");
+    }
+
+    function testVerifyWrongOtpConsumesAttempts() public {
+        bytes32 requestId = keccak256("REQ_ATTEMPTS");
+        uint64 expiry = uint64(block.timestamp + 60);
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
+        verifier.verify(requestId, "000000");
+
+        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
+        assertEq(entry.attempts, 1, "attempt count should increase");
+        assertTrue(!entry.used, "entry should remain unused");
+    }
+
+    function testVerifyLocksAfterMaxAttempts() public {
+        bytes32 requestId = keccak256("REQ_LOCK");
+        uint64 expiry = uint64(block.timestamp + 60);
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
+        uint8 maxAttempts = verifier.MAX_ATTEMPTS();
+        for (uint8 i = 0; i < maxAttempts; i++) {
+            vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
+            verifier.verify(requestId, "111111");
+        }
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.AttemptsExceeded.selector, requestId));
+        verifier.verify(requestId, "123456");
+    }
+
+    function testCleanupAfterUse() public {
+        bytes32 requestId = keccak256("REQ_CLEANUP");
+        uint64 expiry = uint64(block.timestamp + 60);
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        verifier.verify(requestId, "123456");
+
+        verifier.cleanup(requestId);
+        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
+        assertEq(entry.hash, bytes32(0), "entry hash should reset");
+        assertEq(uint256(entry.expiry), 0, "expiry should reset");
+    }
+
+    function testCleanupAfterExpiry() public {
+        bytes32 requestId = keccak256("REQ_EXPIRE_CLEAN");
+        uint64 expiry = uint64(block.timestamp + 1);
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
+        vm.warp(block.timestamp + 120);
+        verifier.cleanup(requestId);
+        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
+        assertEq(entry.hash, bytes32(0), "entry hash should reset");
+    }
+
+    function testCleanupRevertsWhenActive() public {
+        bytes32 requestId = keccak256("REQ_ACTIVE");
+        uint64 expiry = uint64(block.timestamp + 60);
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ActiveEntry.selector, requestId));
+        verifier.cleanup(requestId);
+    }
+
+    function testPauseStopsSetAndVerify() public {
         verifier.pause(true);
-        bytes32 requestId = keccak256("REQ4");
-        bytes32 otpHash = keccak256(abi.encodePacked("222333"));
+
+        bytes32 requestId = keccak256("REQ_PAUSE");
         uint64 expiry = uint64(block.timestamp + 60);
-        bool reverted;
-        try verifier.setOtp(requestId, otpHash, expiry) {
-            reverted = false;
-        } catch {
-            reverted = true;
-        }
-        assertTrue(reverted, "paused contract must reject setOtp");
+
+        vm.prank(issuer);
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        verifier.verify(requestId, "123456");
     }
 
-    function testOnlyIssuerCanSetOtp() public {
-        bytes32 requestId = keccak256("REQ5");
-        bytes32 otpHash = keccak256(abi.encodePacked("333444"));
-        uint64 expiry = uint64(block.timestamp + 60);
-        bool success = attacker.trySet(verifier, requestId, otpHash, expiry);
-        assertEq(success, false, "non issuer should not set otp");
-    }
+    function testIssuerRotationRequiresAdmin() public {
+        address newIssuer = address(0xCAFE);
 
-    function testIssuerRotation() public {
-        address newIssuer = address(0xBEEF);
+        vm.prank(issuer);
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Unauthorized.selector, issuer));
+        verifier.setIssuer(newIssuer);
+
         verifier.setIssuer(newIssuer);
         assertEq(verifier.issuer(), newIssuer, "issuer should rotate");
+    }
+
+    function testAdminRotation() public {
+        address newAdmin = address(0xABCD);
+
+        verifier.setAdmin(newAdmin);
+        assertEq(verifier.admin(), newAdmin, "admin should update");
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Unauthorized.selector, admin));
+        verifier.setAdmin(admin);
+    }
+
+    function testFuzzRejectsIncorrectOtp(string memory wrongOtp) public {
+        bytes32 requestId = keccak256("REQ_FUZZ");
+        uint64 expiry = uint64(block.timestamp + 60);
+        bytes32 correctHash = _hash("654321");
+
+        vm.prank(issuer);
+        verifier.setOtp(requestId, correctHash, expiry);
+
+        vm.assume(keccak256(abi.encodePacked("OTP:v1", wrongOtp)) != correctHash);
+
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
+        verifier.verify(requestId, wrongOtp);
+    }
+
+    function _hash(string memory otp) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("OTP:v1", otp));
     }
 }
