@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MetaMask Integration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
+        
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .metamask-button {
+            background-color: #f6851b;
+            color: white;
+        }
+        
+        .metamask-button:hover {
+            background-color: #e07a17;
+        }
+        
+        .solana-button {
+            background-color: #00ffa3;
+            color: black;
+        }
+        
+        .solana-button:hover {
+            background-color: #00e699;
+        }
+        
+        .result {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MetaMask Integration Test</h1>
+        <p>This page tests the MetaMask integration for the Blockchain OTP System.</p>
+        
+        <button id="connectButton" class="metamask-button">Connect to MetaMask</button>
+        <button id="checkButton" class="solana-button">Check Connection Status</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Function to display results
+        function displayResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        // Function to connect to MetaMask
+        async function connectToMetaMask() {
+            // Check if MetaMask is installed
+            if (typeof window.ethereum === 'undefined') {
+                displayResult('MetaMask is not installed. Please install the MetaMask extension.', 'error');
+                return;
+            }
+            
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                // Get the first account
+                const account = accounts[0];
+                
+                // Get the current network
+                const network = await window.ethereum.request({ 
+                    method: 'net_version' 
+                });
+                
+                // Display success message
+                displayResult(`Successfully connected to MetaMask!<br><strong>Account:</strong> ${account}<br><strong>Network:</strong> ${network}`, 'success');
+            } catch (error) {
+                // User rejected the request or other error occurred
+                displayResult(`Failed to connect to MetaMask: ${error.message}`, 'error');
+            }
+        }
+        
+        // Function to check connection status
+        async function checkConnectionStatus() {
+            // Check if MetaMask is installed
+            if (typeof window.ethereum === 'undefined') {
+                displayResult('MetaMask is not installed. Please install the MetaMask extension.', 'error');
+                return;
+            }
+            
+            try {
+                // Get accounts
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_accounts' 
+                });
+                
+                if (accounts.length > 0) {
+                    // Get the current network
+                    const network = await window.ethereum.request({ 
+                        method: 'net_version' 
+                    });
+                    
+                    // Display success message
+                    displayResult(`Already connected to MetaMask!<br><strong>Account:</strong> ${accounts[0]}<br><strong>Network:</strong> ${network}`, 'success');
+                } else {
+                    displayResult('MetaMask is installed but not connected. Click "Connect to MetaMask" to connect.', 'info');
+                }
+            } catch (error) {
+                displayResult(`Error checking connection status: ${error.message}`, 'error');
+            }
+        }
+        
+        // Add event listeners when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('connectButton').addEventListener('click', connectToMetaMask);
+            document.getElementById('checkButton').addEventListener('click', checkConnectionStatus);
+            
+            // Check connection status on page load
+            checkConnectionStatus();
+        });
+        
+        // Listen for account changes
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.on('accountsChanged', function (accounts) {
+                if (accounts.length > 0) {
+                    displayResult(`Account changed to: ${accounts[0]}`, 'info');
+                } else {
+                    displayResult('Disconnected from MetaMask', 'info');
+                }
+            });
+            
+            // Listen for chain changes
+            window.ethereum.on('chainChanged', function (chainId) {
+                displayResult(`Network changed to chain ID: ${chainId}`, 'info');
+            });
+        }
+    </script>
+</body>
+</html>

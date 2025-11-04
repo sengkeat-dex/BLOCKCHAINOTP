@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px 20px; margin: 10px; }
+        .result { margin: 20px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>CORS Debug Test for Blockchain OTP</h1>
+    
+    <button id="healthTest">Test Health Endpoint</button>
+    <button id="corsTest">Test CORS Endpoint</button>
+    <button id="otpTest">Test OTP Request</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function displayResult(message, isSuccess) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="result ${isSuccess ? 'success' : 'error'}">${message}</div>`;
+        }
+
+        document.getElementById('healthTest').addEventListener('click', async function() {
+            try {
+                const response = await fetch('http://localhost:3000/health');
+                const text = await response.text();
+                displayResult(`Health check: ${text} (Status: ${response.status})`, response.ok);
+            } catch (error) {
+                displayResult(`Health check failed: ${error.message}`, false);
+            }
+        });
+
+        document.getElementById('corsTest').addEventListener('click', async function() {
+            try {
+                const response = await fetch('http://localhost:3000/cors-test');
+                const text = await response.text();
+                displayResult(`CORS test: ${text} (Status: ${response.status})`, response.ok);
+            } catch (error) {
+                displayResult(`CORS test failed: ${error.message}`, false);
+            }
+        });
+
+        document.getElementById('otpTest').addEventListener('click', async function() {
+            try {
+                const response = await fetch('http://localhost:3000/otp/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: 'debug-test-user'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayResult(`OTP request successful: ${JSON.stringify(data)}`, true);
+                } else {
+                    displayResult(`OTP request failed: ${response.status} ${response.statusText}`, false);
+                }
+            } catch (error) {
+                displayResult(`OTP request error: ${error.message}`, false);
+            }
+        });
+    </script>
+</body>
+</html>

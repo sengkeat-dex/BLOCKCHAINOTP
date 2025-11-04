@@ -1,0 +1,21 @@
+# Network endpoints and deployed OtpVerifier addresses. Update as you promote new releases.
+
+[ethereum_sepolia]
+network = "Ethereum Sepolia"
+rpc_url = "https://sepolia.infura.io/v3/YOUR_KEY"
+otp_verifier = "0xa1B29B21c4c1aC7f7a5098b3802C59E232c306bF"
+
+[polygon_amoy]
+network = "Polygon Amoy"
+rpc_url = "https://rpc-amoy.polygon.technology"
+otp_verifier = "0x7E3a1c3d4C19b0Fc6a879F6F326d6f1b7a5e5F13"
+
+[arbitrum_sepolia]
+network = "Arbitrum Sepolia"
+rpc_url = "https://sepolia-rollup.arbitrum.io/rpc"
+otp_verifier = "0x5fE9dAA2dF21c412Ba5F67205D51c3B0431E8e19"
+
+[solana_devnet]
+network = "Solana Devnet"
+rpc_url = "https://api.devnet.solana.com"
+program_id = "6xFZunmP8W4Et8cMsdrxD5g6yL9RS9Beb5GsyhQ2Yw7t"

@@ -1,0 +1,30 @@
+[package]
+name = "otp-frontend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+yew = { version = "0.20", features = ["csr"] }
+yew-router = "0.17"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+gloo-net = "0.2"
+gloo-timers = "0.2"
+gloo-utils = "0.1"
+js-sys = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "console",
+]
+
+[features]
+default = ["csr"]
+csr = ["yew/csr"]
+hydration = ["yew/hydration"]

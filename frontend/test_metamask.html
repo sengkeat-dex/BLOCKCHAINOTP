@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MetaMask Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px 20px; margin: 10px; }
+        .result { margin: 20px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>MetaMask Integration Test</h1>
+    
+    <button id="connectButton">Connect to MetaMask</button>
+    <button id="checkButton">Check Connection</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function displayResult(message, isSuccess) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="result ${isSuccess ? 'success' : 'error'}">${message}</div>`;
+        }
+
+        document.getElementById('connectButton').addEventListener('click', async function() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    displayResult('MetaMask is not installed', false);
+                    return;
+                }
+
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const network = await window.ethereum.request({ method: 'net_version' });
+                
+                displayResult(`Connected to MetaMask!<br>Account: ${accounts[0]}<br>Network: ${network}`, true);
+            } catch (error) {
+                displayResult(`Error: ${error.message}`, false);
+            }
+        });
+
+        document.getElementById('checkButton').addEventListener('click', async function() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    displayResult('MetaMask is not installed', false);
+                    return;
+                }
+
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                
+                if (accounts.length > 0) {
+                    const network = await window.ethereum.request({ method: 'net_version' });
+                    displayResult(`Already connected!<br>Account: ${accounts[0]}<br>Network: ${network}`, true);
+                } else {
+                    displayResult('MetaMask is installed but not connected', false);
+                }
+            } catch (error) {
+                displayResult(`Error: ${error.message}`, false);
+            }
+        });
+    </script>
+</body>
+</html>

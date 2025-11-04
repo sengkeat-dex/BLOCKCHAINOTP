@@ -1,0 +1,10 @@
+/mnt/c/Users/USER/Documents/blockchainotp/frontend/target/wasm32-unknown-unknown/release/deps/gloo_storage-22c342c12d42f5bf.d: /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs
+
+/mnt/c/Users/USER/Documents/blockchainotp/frontend/target/wasm32-unknown-unknown/release/deps/libgloo_storage-22c342c12d42f5bf.rlib: /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs
+
+/mnt/c/Users/USER/Documents/blockchainotp/frontend/target/wasm32-unknown-unknown/release/deps/libgloo_storage-22c342c12d42f5bf.rmeta: /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs /home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs
+
+/home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs:
+/home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs:
+/home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs:
+/home/sengkeat/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs:
