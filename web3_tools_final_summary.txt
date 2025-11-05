@@ -9,10 +9,10 @@
 ## Stage 2 🔐 Security Layers
 - Slither - Static analysis tool for Solidity smart contracts (Version 0.11.3)
 - Mythril - Security analysis tool for EVM bytecode
-- Echidna - Fuzz testing tool for smart contracts (installation completed)
+- Echidna - Fuzz testing tool for smart contracts (available via Docker)
 
 ## Stage 3 🧪 Testing Layers
-- Echidna - Fuzz testing tool for smart contracts (installation completed)
+- Echidna - Fuzz testing tool for smart contracts (available via Docker)
 
 ## Stage 4 🛡️ Protection Layers
 - Docker - Containerization platform
