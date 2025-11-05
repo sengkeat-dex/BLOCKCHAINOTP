@@ -1,0 +1,111 @@
+example_test_type,layer,component,behavior,condition
+Unit Test,core_logic,function,returns_expected_output,always
+Library Test,core_logic,math_library,produces_correct_results,
+Struct & Enum Serialization,core_logic,abi_encoder,encodes_and_decodes_correctly,across_network
+Interface Compliance,core_logic,erc_interface,implements_all_methods,
+Error/Require Test,core_logic,revert_logic,reverts_with_expected_reason,on_invalid_input
+Boundary / Edge Test,core_logic,arithmetic,handles_edge_values,at_min_max
+Initialization Test,core_logic,constructor,sets_default_state,after_deploy
+Invariant Test,core_logic,state_machine,maintains_invariants,during_fuzz
+Stateful Fuzz Test,core_logic,contract_state,resists_random_sequences,under_fuzz
+Differential Test,core_logic,implementation,matches_reference_result,across_versions
+Formal Verification,core_logic,formal_model,satisfies_all_properties,symbolically
+Static Analysis,core_logic,codebase,contains_no_known_issues,at_compile_time
+Mutation Test,core_logic,test_suite,detects_code_mutations,automatically
+Gas/Performance Test,core_logic,execution_engine,consumes_expected_gas,under_load
+Upgrade/Migration Test,core_logic,proxy_storage,preserves_layout_integrity,after_upgrade
+Event Emission Test,core_logic,event_system,emits_correct_topics,on_state_change
+Access Control Test,core_logic,role_manager,enforces_least_privilege,on_sensitive_call
+Pause/Unpause Test,core_logic,pausable_module,disables_actions_when_paused,during_pause
+Pausable Recovery Test,core_logic,pausable_module,resumes_operations,after_unpause
+Kill-Switch / Self-Destruct,core_logic,system_control,shuts_down_safely,by_authorized_user
+Contract ↔ Contract Integration,integration,multi_contract_flow,synchronizes_state,across_contracts
+Router / Vault Scenario Test,integration,router_vault,routes_assets_correctly,under_complex_path
+Token Standard Compliance,integration,token_standard,conforms_to_eip_rules,
+Oracle Feed Integration,integration,oracle_feed,updates_prices_correctly,under_network_delay
+Bridge Validation Test,integration,bridge,verifies_nonce_and_finality,cross_chain
+Cross-Chain Simulation,integration,cross_chain_messaging,maintains_state_consistency,between_chains
+L2 Rollup Interaction,integration,rollup_adapter,syncs_deposits_and_withdrawals,across_layers
+Governance Proposal Flow,integration,governance_module,enforces_timelock,during_vote
+Multisig Flow Test,integration,multisig_wallet,requires_quorum,before_execution
+Reward / Fee Distribution,integration,reward_engine,distributes_fees_correctly,after_cycle
+Liquidity Event Test,integration,amm_pool,mints_and_burns_lp_tokens,during_liquidity_change
+Oracle Failure Injection,integration,oracle_feed,triggers_circuit_breaker,on_feed_drop
+Vault Withdrawal Limits,integration,vault,enforces_cooldown,after_withdrawal
+Reentrancy Regression,integration,contract_call,prevents_nested_invocation,during_attack
+Flash-Loan Attack Simulation,integration,lending_pool,prevents_unfair_borrow,under_flashloan
+Front-Run / Sandwich Test,integration,trading_engine,maintains_price_fairness,under_order_race
+Slippage & Price Impact,integration,amm_pool,limits_price_impact,during_trade
+MEV Resistance Test,integration,transaction_flow,produces_deterministic_result,regardless_order
+Oracle Manipulation Fuzz,integration,oracle_feed,filters_outliers,during_data_spike
+Lending Liquidation Scenario,integration,lending_module,liquidates_correctly,when_collateral_breached
+E2E Wallet ↔ DApp Test,system,wallet_ui,connects_and_signs_tx,locally
+RPC Endpoint Test,system,rpc_server,responds_correctly,per_spec
+MetaMask / WalletConnect Test,system,wallet_integration,completes_handshake,headless_browser
+Bridge UI E2E,system,bridge_ui,executes_transfer_flow,cross_chain
+Frontend-Contract Binding,system,frontend_binding,syncs_with_abi,after_deploy
+GraphQL / Subgraph Sync Test,system,indexer,stays_up_to_date,lt_10s_delay
+API Contract Test,system,rest_api,follows_schema,on_valid_request
+Load / Stress Test,system,backend_service,maintains_latency_budget,under_peak_load
+Chaos / Adversarial Test,system,runtime_env,stays_stable,during_faults
+Fork-State Test,system,blockchain_state,reproduces_mainnet_state,at_live_block
+Gas Spike Stress,system,mempool,handles_congestion,under_high_gas
+Rate-Limit Enforcement,system,rpc_gateway,throttles_after_threshold,under_burst
+Session Timeout / Replay,system,session_manager,rejects_old_nonce,after_expiry
+Error Injection / Failover,system,rpc_client,switches_to_backup,on_primary_failure
+Cold-Start Test,system,infrastructure,boots_cleanly,from_scratch
+Upgrade Roll-Forward / Roll-Back,system,deployment_pipeline,migrates_safely,both_directions
+Telemetry & Metrics Test,system,telemetry_collector,emits_correct_labels,always
+Alert & Pager Test,system,alerting_system,sends_notifications,when_triggered
+Resilience / Recovery Drill,system,state_backup,restores_successfully,after_crash
+Uptime SLO Test,system,monitoring_agent,meets_availability_goal,continuously
+Permission Escalation Test,security,access_control,rejects_unauthorized_actions,always
+Privilege Boundary Test,security,module_boundary,isolates_contexts,across_modules
+Secret Leakage Scan,security,codebase,contains_no_secrets,in_logs_or_repo
+Access Replay Test,security,token_validator,rejects_reused_tokens,after_expiry
+Signature Validation Test,security,signer,verifies_legit_signatures,on_valid_data
+Entropy / RNG Test,security,random_generator,produces_unbiased_values,repeatedly
+Timestamp Dependency Test,security,time_logic,maintains_validity,plus_minus_15s_drift
+Overflow / Underflow Fuzz,security,arithmetic_ops,resists_wrapping,under_fuzz
+Reentrancy Probe,security,contract_call,blocks_recursive_call,during_attack
+DelegateCall / Low-Level Call Audit,security,delegatecall_handler,limits_external_call_targets,always
+Denial-of-Service Test,security,gas_usage,stays_within_limits,under_attack
+Flash-Loan Drain Simulation,security,lending_pool,protects_funds,under_flashloan
+Oracle Compromise Drill,security,oracle_feed,triggers_fallback,on_bad_signer
+Bridge Replay / Nonce Test,security,bridge,rejects_duplicate_proofs,cross_chain
+Governance Takeover Simulation,security,governance_module,prevents_vote_attack,quorum_attack
+Pausable Circuit Test,security,circuit_breaker,halts_operations,on_threshold_breach
+Key-Rotation Test,security,key_manager,accepts_new_keys,post_rotation
+Vault Withdrawal Flood Test,security,vault,queues_requests,under_burst
+Slashing & Penalty Logic Test,security,validator_set,applies_penalty_correctly,on_misbehavior
+Cross-Shard Replay Test,security,shard_validator,detects_double_spend,cross_shard
+Node Sync Test,infra,node,syncs_consistently,during_bootstrap
+Peer Connectivity Test,infra,p2p_network,maintains_connections,under_load
+Validator Set Change Test,infra,consensus_module,transitions_smoothly,every_epoch
+Consensus Fork Test,infra,consensus_engine,selects_longest_chain,under_conflict
+Block Propagation Delay Test,infra,network_layer,delivers_blocks_fast,under_traffic
+RPC Compatibility Test,infra,rpc_server,stays_spec_compliant,all_versions
+Network Partition Chaos,infra,network_cluster,recovers_from_partition,within_timeout
+Storage Corruption Test,infra,node_storage,rebuilds_from_peers,after_corruption
+Logging & Telemetry Security,infra,logging_system,redacts_sensitive_data,always
+Keyfile Permission Test,infra,filesystem,enforces_strict_permissions,on_key_access
+Docker Image Scan,infra,docker_image,has_no_critical_cves,on_build
+K8s Admission Policy Test,infra,kubernetes_cluster,validates_signed_images,at_deploy
+CI/CD Pipeline Security Test,infra,cicd_pipeline,hides_secrets_in_logs,always
+SBOM Verification Test,infra,dependency_tree,verifies_signed_packages,before_build
+Reproducible Build Test,infra,build_system,produces_identical_output,across_envs
+Compliance / Sanctions List Test,compliance,sanctions_checker,blocks_blacklisted_users,always
+KYC / AML Flow Test,compliance,onboarding_flow,verifies_user_legality,during_signup
+Tax / Accounting Logic,compliance,ledger_module,balances_fees_correctly,after_transaction
+Data Retention Test,compliance,storage_policy,deletes_data_on_ttl,after_expiry
+Metrics / KPI Regression,compliance,analytics_engine,maintains_kpi_thresholds,continuous
+User UX Test,compliance,user_interface,displays_clear_errors,on_invalid_input
+Localization / i18n Test,compliance,localization_module,renders_correct_language,by_locale
+Accessibility Test,compliance,accessibility_ui,passes_wcag_criteria,with_screen_reader
+Notification & Alert Flow Test,compliance,notification_system,sends_once_only,per_event
+Analytics / Telemetry Accuracy,compliance,telemetry_pipeline,counts_events_correctly,in_reports
+Governance Reporting Test,compliance,reporting_module,matches_on_chain_data,always
+Incident Simulation / Post-Mortem Test,compliance,operations_team,recovers_within_sla,after_failure
+Upgrade Governance Vote Test,compliance,dao_governance,executes_with_quorum,after_vote
+Documentation Validation Test,compliance,documentation_repo,matches_api_spec,on_commit
+License & IP Compliance Test,compliance,code_repository,includes_spdx_headers,at_build
