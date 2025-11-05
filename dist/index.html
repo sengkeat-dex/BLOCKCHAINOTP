@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain OTP System</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        .content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .feature {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .feature h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .cta {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #2c3e50;
+        }
+        .btn-secondary:hover {
+            background-color: #1a252f;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+        }
+        code {
+            background-color: #f1f2f6;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Blockchain OTP System</h1>
+        <p class="tagline">Enhanced security through smart contract verification</p>
+    </header>
+
+    <div class="content">
+        <h2>About This Project</h2>
+        <p>The Blockchain OTP System is a hybrid solution that combines:</p>
+        <ul>
+            <li><strong>Rust backend</strong> for high-performance OTP generation and management</li>
+            <li><strong>Yew WebAssembly frontend</strong> for a responsive user interface</li>
+            <li><strong>Solidity smart contracts</strong> for secure on-chain OTP verification</li>
+            <li><strong>Axum web framework</strong> for REST API endpoints</li>
+        </ul>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🔐 Enhanced Security</h3>
+                <p>Uses blockchain technology for secure OTP verification with rate limiting and one-time use enforcement.</p>
+            </div>
+            <div class="feature">
+                <h3>🔗 Multi-Chain Support</h3>
+                <p>Deploy and verify OTPs on both Ethereum and Solana blockchains.</p>
+            </div>
+            <div class="feature">
+                <h3>💼 Wallet Integration</h3>
+                <p>Connect with MetaMask (Ethereum) and Phantom (Solana) wallets.</p>
+            </div>
+            <div class="feature">
+                <h3>⚡ High Performance</h3>
+                <p>Built with Rust for maximum performance and WebAssembly for a responsive frontend.</p>
+            </div>
+        </div>
+
+        <h2>Getting Started</h2>
+        <p>To run this project locally:</p>
+        <ol>
+            <li>Clone the repository: <code>git clone https://github.com/sengkeat-dex/BLOCKCHAINOTP.git</code></li>
+            <li>Install Rust and Trunk</li>
+            <li>Build the project: <code>cargo build</code></li>
+            <li>Run the backend: <code>cargo run</code></li>
+            <li>Run the frontend: <code>cd frontend && trunk serve</code></li>
+        </ol>
+
+        <div class="cta">
+            <a href="https://github.com/sengkeat-dex/BLOCKCHAINOTP" class="btn">View on GitHub</a>
+            <a href="https://github.com/sengkeat-dex/BLOCKCHAINOTP/blob/main/README.md" class="btn btn-secondary">Read Documentation</a>
+        </div>
+
+        <h2>Architecture</h2>
+        <p>The system implements a hybrid approach combining off-chain OTP generation with on-chain verification:</p>
+        <pre>[Client] ↔ [Backend API] ↔ [Smart Contracts]
+              ↓
+         [WebAssembly UI]</pre>
+
+        <h2>API Endpoints</h2>
+        <ul>
+            <li><code>GET /health</code> - Health check endpoint</li>
+            <li><code>POST /otp/request</code> - Request a new OTP</li>
+            <li><code>POST /otp/verify</code> - Verify an OTP</li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>Blockchain OTP System &copy; 2025 | <a href="https://github.com/sengkeat-dex/BLOCKCHAINOTP">GitHub Repository</a></p>
+    </footer>
+</body>
+</html>
