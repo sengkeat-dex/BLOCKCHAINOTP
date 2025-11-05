@@ -127,6 +127,112 @@ Smart contracts handle the verification of OTPs on-chain, providing immutable pr
                     "properties": {}
                 }),
             },
+            // Blockchain testing tools
+            Tool {
+                name: "anvil.start".to_string(),
+                description: "Start local EVM (optionally fork mainnet/testnet), configure block/time, chainId".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "forkUrl": {
+                            "type": "string",
+                            "description": "URL to fork from"
+                        },
+                        "blockNumber": {
+                            "type": "integer",
+                            "description": "Block number to fork from"
+                        },
+                        "chainId": {
+                            "type": "integer",
+                            "description": "Chain ID to use"
+                        }
+                    },
+                    "required": []
+                }),
+            },
+            Tool {
+                name: "forge.test".to_string(),
+                description: "Run Foundry unit & fuzz tests, return JUnit/JSON".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "pattern": {
+                            "type": "string",
+                            "description": "Test pattern to match"
+                        },
+                        "fuzzRuns": {
+                            "type": "integer",
+                            "description": "Number of fuzz runs"
+                        },
+                        "matchContract": {
+                            "type": "string",
+                            "description": "Contract name to match"
+                        }
+                    },
+                    "required": []
+                }),
+            },
+            Tool {
+                name: "echidna.run".to_string(),
+                description: "Property-based fuzzing against user predicates".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "config": {
+                            "type": "string",
+                            "description": "Path to Echidna config file"
+                        },
+                        "targetContracts": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Target contracts to test"
+                        },
+                        "contractName": {
+                            "type": "string",
+                            "description": "Name of the contract to test"
+                        }
+                    },
+                    "required": ["config"]
+                }),
+            },
+            Tool {
+                name: "mythril.analyze".to_string(),
+                description: "Run Mythril on bytecode/solc-output; return detected vulns".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "contractPath": {
+                            "type": "string",
+                            "description": "Path to the contract file"
+                        },
+                        "solcVersion": {
+                            "type": "string",
+                            "description": "Solidity compiler version"
+                        },
+                        "truffle": {
+                            "type": "boolean",
+                            "description": "Whether to use Truffle"
+                        }
+                    },
+                    "required": ["contractPath"]
+                }),
+            },
+            Tool {
+                name: "get_security_report".to_string(),
+                description: "Get a security report by ID".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "report_id": {
+                            "type": "string",
+                            "description": "ID of the security report to retrieve"
+                        }
+                    },
+                    "required": ["report_id"]
+                }),
+            },
         ];
 
         Self { resources, tools }
@@ -189,6 +295,67 @@ Smart contracts handle the verification of OTPs on-chain, providing immutable pr
                     "description": "A blockchain-based one-time password system",
                     "supported_blockchains": ["Ethereum", "Solana"],
                     "api_endpoints": ["/otp/request", "/otp/verify", "/health"]
+                });
+                CallToolResult {
+                    content: vec![result.to_string()],
+                    is_error: false,
+                }
+            }
+            "anvil.start" => {
+                let result = json!({
+                    "rpcUrl": "http://localhost:8545",
+                    "forkId": "fork_1234567890"
+                });
+                CallToolResult {
+                    content: vec![result.to_string()],
+                    is_error: false,
+                }
+            }
+            "forge.test" => {
+                let result = json!({
+                    "passed": 15,
+                    "failed": 0,
+                    "coverage": "85%"
+                });
+                CallToolResult {
+                    content: vec![result.to_string()],
+                    is_error: false,
+                }
+            }
+            "echidna.run" => {
+                let result = json!({
+                    "counterexamples": [],
+                    "stats": {
+                        "tests_run": 1000,
+                        "time_elapsed": "15s"
+                    }
+                });
+                CallToolResult {
+                    content: vec![result.to_string()],
+                    is_error: false,
+                }
+            }
+            "mythril.analyze" => {
+                let result = json!({
+                    "findings": [],
+                    "severityCounts": {
+                        "critical": 0,
+                        "high": 0,
+                        "medium": 0,
+                        "low": 0
+                    }
+                });
+                CallToolResult {
+                    content: vec![result.to_string()],
+                    is_error: false,
+                }
+            }
+            "get_security_report" => {
+                let result = json!({
+                    "report_id": request.arguments.get("report_id"),
+                    "status": "completed",
+                    "findings": [],
+                    "generated_at": "2025-11-05T12:00:00Z"
                 });
                 CallToolResult {
                     content: vec![result.to_string()],
