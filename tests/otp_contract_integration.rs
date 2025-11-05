@@ -54,7 +54,12 @@ impl OnChainSimulator {
         self.now
     }
 
-    fn set_otp(&mut self, request_id: [u8; 32], hash: [u8; 32], expiry: u64) -> Result<(), OnChainError> {
+    fn set_otp(
+        &mut self,
+        request_id: [u8; 32],
+        hash: [u8; 32],
+        expiry: u64,
+    ) -> Result<(), OnChainError> {
         if expiry <= self.now {
             return Err(OnChainError::Expired);
         }
@@ -165,7 +170,9 @@ async fn backend_and_contract_logic_align() {
     let otp_hash = hex_to_bytes32(&stored.otp_hash);
 
     chain.set_time(stored.expires_at.saturating_sub(30));
-    chain.set_otp(request_id_bytes, otp_hash, stored.expires_at).unwrap();
+    chain
+        .set_otp(request_id_bytes, otp_hash, stored.expires_at)
+        .unwrap();
 
     assert_eq!(chain.verify(&request_id_bytes, "000000"), Ok(false));
     assert_eq!(
@@ -181,7 +188,8 @@ async fn backend_and_contract_logic_align() {
         "second invalid attempt should increment counter"
     );
 
-    let otp = recover_otp_from_hash(&stored.otp_hash).expect("hash should map back to OTP for test");
+    let otp =
+        recover_otp_from_hash(&stored.otp_hash).expect("hash should map back to OTP for test");
     assert!(chain.verify(&request_id_bytes, &otp).unwrap());
     assert_eq!(
         chain.verify(&request_id_bytes, &otp),

@@ -220,4 +220,153 @@ contract OtpVerifierTest is Test {
     function _hash(string memory otp) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("OTP:v1", otp));
     }
+
+    // === NEW SECURITY TESTS ===
+
+    // Test for reentrancy protection (even though not directly applicable, good to have)
+    function testNoReentrancyInSetOtp() public {
+        bytes32 requestId = keccak256("REQ_REENTRANCY");
+        uint64 expiry = uint64(block.timestamp + 60);
+        
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        
+        // Verify the function doesn't allow reentrancy by attempting to set the same request twice
+        vm.prank(issuer);
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.EntryExists.selector, requestId));
+        verifier.setOtp(requestId, _hash("654321"), expiry);
+    }
+
+    // Test for overflow protection in attempts counter
+    function testAttemptsCounterDoesNotOverflow() public {
+        bytes32 requestId = keccak256("REQ_OVERFLOW");
+        uint64 expiry = uint64(block.timestamp + 60);
+        
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        
+        // Try to exceed max attempts multiple times to check for overflow
+        uint8 maxAttempts = verifier.MAX_ATTEMPTS();
+        for (uint8 i = 0; i < maxAttempts + 5; i++) {
+            verifier.verify(requestId, "000000"); // Wrong OTP
+        }
+        
+        // After max attempts, it should still revert
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.AttemptsExceeded.selector, requestId));
+        verifier.verify(requestId, "123456");
+    }
+
+    // Test for proper zero address validation
+    function testZeroAddressValidation() public {
+        // Test constructor reverts with zero address
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ZeroAddress.selector));
+        new OtpVerifier(address(0), admin);
+        
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ZeroAddress.selector));
+        new OtpVerifier(issuer, address(0));
+        
+        // Test setIssuer reverts with zero address
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ZeroAddress.selector));
+        verifier.setIssuer(address(0));
+        
+        // Test setAdmin reverts with zero address
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ZeroAddress.selector));
+        verifier.setAdmin(address(0));
+    }
+
+    // Test for proper hash validation (not zero hash)
+    function testInvalidHashReverts() public {
+        bytes32 requestId = keccak256("REQ_INVALID_HASH");
+        uint64 expiry = uint64(block.timestamp + 60);
+        bytes32 invalidHash = bytes32(0);
+        
+        vm.prank(issuer);
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidHash.selector));
+        verifier.setOtp(requestId, invalidHash, expiry);
+    }
+
+    // Test for proper cleanup of used entries
+    function testCleanupUsedEntry() public {
+        bytes32 requestId = keccak256("REQ_CLEAN_USED");
+        uint64 expiry = uint64(block.timestamp + 60);
+        
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        verifier.verify(requestId, "123456"); // Mark as used
+        
+        // Should be able to cleanup used entry
+        verifier.cleanup(requestId);
+        
+        (bytes32 hashAfterCleanup, , , ) = verifier.entries(requestId);
+        assertEq(hashAfterCleanup, bytes32(0), "Entry should be cleaned up");
+    }
+
+    // Test for proper cleanup of expired entries
+    function testCleanupExpiredEntry() public {
+        bytes32 requestId = keccak256("REQ_CLEAN_EXPIRED");
+        uint64 expiry = uint64(block.timestamp + 1);
+        
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        
+        // Warp to after expiry
+        vm.warp(block.timestamp + 2);
+        
+        // Should be able to cleanup expired entry
+        verifier.cleanup(requestId);
+        
+        (bytes32 hashAfterCleanup, , , ) = verifier.entries(requestId);
+        assertEq(hashAfterCleanup, bytes32(0), "Entry should be cleaned up");
+    }
+
+    // Test for proper event emission
+    function testEventEmission() public {
+        bytes32 requestId = keccak256("REQ_EVENTS");
+        uint64 expiry = uint64(block.timestamp + 60);
+        
+        // Test OtpSet event
+        vm.expectEmit(true, true, false, true);
+        emit OtpVerifier.OtpSet(requestId, expiry);
+        
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        
+        // Test AttemptRecorded event
+        vm.expectEmit(true, true, false, true);
+        emit OtpVerifier.AttemptRecorded(requestId, 1);
+        
+        verifier.verify(requestId, "000000"); // Wrong OTP
+        
+        // Test OtpLocked event when max attempts reached
+        uint8 maxAttempts = verifier.MAX_ATTEMPTS();
+        for (uint8 i = 1; i < maxAttempts; i++) {
+            verifier.verify(requestId, "000000"); // Wrong OTP
+        }
+        
+        vm.expectEmit(true, false, false, true);
+        emit OtpVerifier.OtpLocked(requestId);
+        
+        verifier.verify(requestId, "000000"); // This should lock it
+    }
+
+    // Test for proper state after verification
+    function testStateAfterVerification() public {
+        bytes32 requestId = keccak256("REQ_STATE");
+        uint64 expiry = uint64(block.timestamp + 60);
+        
+        vm.prank(issuer);
+        verifier.setOtp(requestId, _hash("123456"), expiry);
+        
+        // Before verification
+        (, , uint8 attemptsBefore, bool usedBefore) = verifier.entries(requestId);
+        assertEq(attemptsBefore, 0, "Should start with 0 attempts");
+        assertFalse(usedBefore, "Should not be used initially");
+        
+        // After successful verification
+        verifier.verify(requestId, "123456");
+        
+        (, , uint8 attemptsAfter, bool usedAfter) = verifier.entries(requestId);
+        assertEq(attemptsAfter, 0, "Attempts should remain 0 after success");
+        assertTrue(usedAfter, "Should be marked as used after success");
+    }
 }

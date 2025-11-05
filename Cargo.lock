@@ -239,6 +239,7 @@ name = "blockchain-otp"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "ethers",
  "gloo-net 0.2.6",
  "hex",
  "hyper",
@@ -249,7 +250,9 @@ dependencies = [
  "serde",
  "serde_json",
  "sha3",
+ "thiserror 1.0.69",
  "tokio",
+ "toml",
  "tower",
  "tower-http",
  "wasm-bindgen",

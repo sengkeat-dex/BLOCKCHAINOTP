@@ -20,6 +20,9 @@ hex = "0.4"
 redis = "0.23"
 tower-http = { version = "0.4", features = ["cors"] }
 zeroize = "1.3.0"
+ethers = { version = "2.0", default-features = false, features = ["rustls"] }
+thiserror = "1.0"
+toml = "0.8"
 
 # WebAssembly dependencies for frontend
 wasm-bindgen = "0.2"

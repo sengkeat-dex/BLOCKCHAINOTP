@@ -1,4 +1,6 @@
-use blockchain_otp::{create_app, mcp_server::BlockchainOtpMcpServer, mcp_handler::handle_mcp_connection};
+use blockchain_otp::{
+    create_app, mcp_handler::handle_mcp_connection, mcp_server::BlockchainOtpMcpServer,
+};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
@@ -46,11 +48,14 @@ async fn run_api_server(
     Ok(())
 }
 
-async fn run_mcp_server(server: Arc<BlockchainOtpMcpServer>, listener: TcpListener) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn run_mcp_server(
+    server: Arc<BlockchainOtpMcpServer>,
+    listener: TcpListener,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     loop {
         let (socket, _) = listener.accept().await?;
         let server_clone = server.clone();
-        
+
         tokio::spawn(async move {
             if let Err(e) = handle_mcp_connection(socket, server_clone).await {
                 eprintln!("Error handling MCP connection: {}", e);
