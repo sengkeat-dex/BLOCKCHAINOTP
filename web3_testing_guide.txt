@@ -1,0 +1,28 @@
+# Web3 Tools Testing Guide
+
+## 1. Smart Contract Development Tools
+
+### Solidity Compiler (solc)
+- Usage: Compile Solidity contracts
+- Command: ./solc --optimize --bin contract.sol
+
+### Foundry
+- Usage: Testing and deployment framework
+- Commands:
+  - forge build (compile contracts)
+  - forge test (run tests)
+  - forge deploy (deploy contracts)
+
+## 2. Security Analysis Tools
+
+### Slither
+- Usage: Static analysis for vulnerabilities
+- Command: ~/.local/bin/slither /path/to/contract.sol
+
+### Mythril
+- Usage: Security analysis of EVM bytecode
+- Command: ./mythril_env/bin/myth analyze /path/to/contract.sol
+
+### Echidna
+- Usage: Fuzz testing for property-based verification
+- Command: docker run -it --rm -v " \C:\Users\USER\Documents\blockchainotp\:/code

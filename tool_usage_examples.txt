@@ -1,0 +1,25 @@
+# Tool Usage Examples with forge-std Repository
+
+## 1. Foundry Tools
+
+### Compilation
+cd /mnt/c/Users/USER/Documents/blockchainotp/web3-testing/forge-std
+forge build
+
+### Testing
+forge test
+
+### Specific Test Execution
+forge test -m testConsoleValue
+
+## 2. Security Analysis Tools
+
+### Slither Analysis
+~/.local/bin/slither --solc /mnt/c/Users/USER/Documents/blockchainotp/solc /mnt/c/Users/USER/Documents/blockchainotp/web3-testing/forge-std/src/console.sol
+
+### Mythril Analysis
+/mnt/c/Users/USER/Documents/blockchainotp/mythril_env/bin/myth analyze /mnt/c/Users/USER/Documents/blockchainotp/web3-testing/forge-std/src/console.sol
+
+### Echidna Fuzz Testing
+cd /mnt/c/Users/USER/Documents/blockchainotp/web3-testing/forge-std
+docker run -it --rm -v " \C:\Users\USER\Documents\blockchainotp\:/code
