@@ -1,0 +1,18 @@
+Layer,Goal,Controls,Fetch/XHR Involvement,Gate / CI Check,Evidence / Artifacts
+Security,Identify attack surfaces (origin, CORS, tokens),"HTTPS, CORS policy, referrerPolicy, credentials, integrity attribute","`mode`, `credentials`, headers, HTTPS","Static code scan (SAST), policy lint","Security headers config, code scan report"
+Protection,Enforce runtime constraints and safety brakes,"CSP, CSRF, rate limit, timeout/abort, credentials isolation","`AbortController`, `X-CSRF-Token`, CSP headers","Unit + Integration tests verifying headers and timeouts","E2E test logs, rate-limit config, timeout evidence"
+Validation,Ensure all data shapes and types are correct,"Client/server schema checks, content-type enforcement","Payload pre-check before fetch/xhr.send()","Schema validation tests","Validation schemas, test reports"
+Sanitization,Remove or neutralize malicious data,"DOMPurify, escaping, output encoding","DOMPurify for input/output, backend HTML encoding","Fuzz and XSS test","ZAP report, sanitization logs"
+Testing,Prove protections actually work end-to-end,"Unit, Integration, DAST, Fuzz tests","Mocked fetch/xhr flows and API calls","CI gates for tests coverage ≥90%, DAST must pass","Test reports, coverage summary"
+
+Governance & Policy,Define ownership and approval of security changes,"CODEOWNERS, mandatory review, policy RFCs, docs",N/A,"Security owner required for CORS/CSP/auth changes","Approved PRs, RFC IDs, changelog entries"
+Identity & Access,Control who/what can act,"OAuth2/OIDC, JWT rotation, mTLS, RBAC/ABAC","Tokens or certs attached in fetch/xhr headers","E2E tests for login/refresh/expired-token","Token TTL logs, access matrices, auth tests"
+Secrets & Key Management,Prevent credential exposure,"Vault/KMS, sealed secrets, short-lived creds, env allowlist",N/A,"gitleaks/TruffleHog must pass","Secret rotation logs, audit reports"
+Supply Chain Security,Secure dependencies and builds,"SBOM (Syft), dependency audit, provenance (SLSA), cosign signing",N/A,"Fail build if high-severity vulns or unsigned artifacts","SBOM artifact, signature verification logs"
+Observability,Enable full visibility and tracing,"Structured logs, tracing, metrics","Client fetch timing → server span","Smoke test must emit traces/metrics","Dashboards, SLO reports, alert history"
+Resilience,Survive failure gracefully,"Retries/backoff, circuit breakers, bulkheads","Retry logic around fetch/xhr","Load tests at N RPS, p95 < SLO","Chaos drill logs, latency graphs"
+Privacy & Data Lifecycle,Protect and erase PII,"Minimization, retention/erasure, encryption, consent flags","Avoid sending PII in requests","Unit test: PII never logged; DSR test passes","Data maps, DSR runbooks"
+Change Management & Release Safety,Ship safely under control,"Feature flags, canary/blue-green, migration plan",N/A,"Progressive delivery required for risky controls","Rollout checklist, flag audit trails"
+Incident Response,Prepare for and handle security incidents,"On-call rota, severity matrix, comms templates, post-mortems",N/A,"Quarterly tabletop or drill required","IR runbooks, last drill report"
+Threat Modeling & Risk,Identify and mitigate design risks,"STRIDE or kill-chain cards per endpoint",N/A,"New endpoint requires threat card","Risk register with owner/SLA/mitigation"
+Compliance Mapping,Demonstrate conformance to standards,"Map controls to OWASP ASVS, CIS, SOC2, ISO",N/A,"Pipeline regenerates control evidence index","Control-to-standard matrix, audit evidence"

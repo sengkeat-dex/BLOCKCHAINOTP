@@ -29,7 +29,6 @@ enum OnChainError {
     AlreadyUsed,
     Expired,
     AttemptsLocked,
-    InvalidOtp(u8),
     ActiveRequest,
 }
 
@@ -92,7 +91,7 @@ impl OnChainSimulator {
         let expected = hex_to_bytes32(&hash_otp(otp));
         if expected != entry.hash {
             entry.attempts = entry.attempts.saturating_add(1);
-            return Err(OnChainError::InvalidOtp(entry.attempts));
+            return Ok(false);
         }
 
         entry.used = true;
@@ -168,13 +167,18 @@ async fn backend_and_contract_logic_align() {
     chain.set_time(stored.expires_at.saturating_sub(30));
     chain.set_otp(request_id_bytes, otp_hash, stored.expires_at).unwrap();
 
+    assert_eq!(chain.verify(&request_id_bytes, "000000"), Ok(false));
     assert_eq!(
-        chain.verify(&request_id_bytes, "000000"),
-        Err(OnChainError::InvalidOtp(1))
+        chain.entry(&request_id_bytes).unwrap().attempts,
+        1,
+        "first invalid attempt should increment counter"
     );
+
+    assert_eq!(chain.verify(&request_id_bytes, "111111"), Ok(false));
     assert_eq!(
-        chain.verify(&request_id_bytes, "111111"),
-        Err(OnChainError::InvalidOtp(2))
+        chain.entry(&request_id_bytes).unwrap().attempts,
+        2,
+        "second invalid attempt should increment counter"
     );
 
     let otp = recover_otp_from_hash(&stored.otp_hash).expect("hash should map back to OTP for test");
@@ -197,9 +201,11 @@ async fn backend_and_contract_logic_align() {
         Err(OnChainError::ActiveRequest)
     );
     for expected_attempt in 1..=OnChainSimulator::MAX_ATTEMPTS {
+        assert_eq!(chain.verify(&request_id_bytes, "999999"), Ok(false));
         assert_eq!(
-            chain.verify(&request_id_bytes, "999999"),
-            Err(OnChainError::InvalidOtp(expected_attempt))
+            chain.entry(&request_id_bytes).unwrap().attempts,
+            expected_attempt,
+            "attempt counter should reflect failed verifications"
         );
     }
     assert_eq!(
