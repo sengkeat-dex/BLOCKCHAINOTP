@@ -19,6 +19,10 @@ use anomaly_detection::{AnomalyDetector, VerificationAttempt};
 pub mod alerts;
 use alerts::AlertManager;
 
+// Add the MCP server modules
+pub mod mcp_server;
+pub mod mcp_handler;
+
 /// Shared application state backing the Axum router.
 #[derive(Clone)]
 pub struct AppState {

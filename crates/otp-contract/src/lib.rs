@@ -395,15 +395,14 @@ impl SolanaContext {
     }
 }
 
-#[async_trait]
 #[cfg(feature = "solana")]
 #[async_trait]
 impl OtpChain for SolanaOtpClient {
     async fn set_otp(
         &self,
-        _request_id: [u8; 32],
-        _otp_hash: [u8; 32],
-        _expiry: u64,
+        request_id: [u8; 32],
+        otp_hash: [u8; 32],
+        expiry: u64,
     ) -> Result<(), OtpChainError> {
         self.with_rpc(move |ctx| ctx.set_otp(request_id, otp_hash, expiry))
             .await
