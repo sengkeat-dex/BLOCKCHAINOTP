@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Wallet Connection Test</title>
+</head>
+<body>
+    <h1>Wallet Connection Test</h1>
+    <button id="metamask-btn">Test MetaMask Connection</button>
+    <button id="phantom-btn">Test Phantom Connection</button>
+    <div id="result"></div>
+
+    <!-- MetaMask integration script -->
+    <script src="metamask.js"></script>
+    
+    <!-- Solana Phantom integration script -->
+    <script src="solana.js"></script>
+    
+    <script>
+        document.getElementById('metamask-btn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            try {
+                resultDiv.innerHTML = 'Connecting to MetaMask...';
+                console.log('Window ethereum:', window.ethereum);
+                console.log('ConnectToMetaMask function:', window.connectToMetaMask);
+                
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('MetaMask is not installed');
+                }
+                
+                const result = await window.connectToMetaMaskDebug();
+                resultDiv.innerHTML = `Connected to MetaMask: ${JSON.stringify(result)}`;
+            } catch (error) {
+                console.error('MetaMask connection error:', error);
+                resultDiv.innerHTML = `MetaMask connection failed: ${error.message}`;
+            }
+        });
+        
+        document.getElementById('phantom-btn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            try {
+                resultDiv.innerHTML = 'Connecting to Phantom...';
+                console.log('Window solana:', window.solana);
+                console.log('ConnectToPhantom function:', window.connectToPhantom);
+                
+                if (typeof window.solana === 'undefined' || !window.solana.isPhantom) {
+                    throw new Error('Phantom is not installed');
+                }
+                
+                const result = await window.connectToPhantomDebug();
+                resultDiv.innerHTML = `Connected to Phantom: ${JSON.stringify(result)}`;
+            } catch (error) {
+                console.error('Phantom connection error:', error);
+                resultDiv.innerHTML = `Phantom connection failed: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

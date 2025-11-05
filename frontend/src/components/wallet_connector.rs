@@ -46,6 +46,32 @@ extern "C" {
     fn is_phantom_connected() -> js_sys::Promise;
 }
 
+// Function to show an alert using web-sys
+fn show_alert(message: &str) {
+    web_sys::window()
+        .unwrap()
+        .alert_with_message(message)
+        .unwrap();
+}
+
+// Function to check if a JavaScript function exists
+fn check_js_function_exists(function_name: &str) -> bool {
+    let window = web_sys::window().unwrap();
+    match window.get(function_name) {
+        Some(val) => !val.is_undefined(),
+        None => false,
+    }
+}
+
+// Function to check if a JavaScript object exists
+fn check_js_object_exists(object_name: &str) -> bool {
+    let window = web_sys::window().unwrap();
+    match window.get(object_name) {
+        Some(val) => !val.is_undefined(),
+        None => false,
+    }
+}
+
 /// Wallet Connector component
 #[function_component(WalletConnector)]
 pub fn wallet_connector(props: &WalletConnectorProps) -> Html {
@@ -69,18 +95,48 @@ pub fn wallet_connector(props: &WalletConnectorProps) -> Html {
                 success: None,
             });
             
+            // Check if MetaMask is installed before attempting to connect
+            let ethereum_exists = check_js_object_exists("ethereum");
+            console::log_1(&format!("Ethereum exists: {}", ethereum_exists).into());
+            
+            if !ethereum_exists {
+                let error_msg = "MetaMask is not installed. Please install MetaMask to continue.".to_string();
+                show_alert(&error_msg);
+                state.set(WalletConnectorState {
+                    connecting: false,
+                    error: Some(error_msg),
+                    success: None,
+                });
+                return;
+            }
+            
+            // Check if the connect function exists
+            let connect_function_exists = check_js_function_exists("connectToMetaMask");
+            console::log_1(&format!("connectToMetaMask function exists: {}", connect_function_exists).into());
+            
+            // Try to call the debug version first to see if there are any issues
+            let debug_function_exists = check_js_function_exists("connectToMetaMaskDebug");
+            if debug_function_exists {
+                console::log_1(&"Using debug version of connectToMetaMask".into());
+            }
+            
             // Call the JavaScript function to connect to MetaMask
+            console::log_1(&"Calling connect_to_metamask()".into());
             let promise = connect_to_metamask();
             
             wasm_bindgen_futures::spawn_local(async move {
+                console::log_1(&"Inside MetaMask promise handler".into());
                 match wasm_bindgen_futures::JsFuture::from(promise).await {
                     Ok(js_value) => {
+                        console::log_1(&"MetaMask connection successful".into());
                         // Convert the JavaScript object to a Rust string
                         let account_info = js_value.into_serde::<serde_json::Value>()
                             .unwrap_or_else(|_| serde_json::json!({"account": "0x0000000000000000000000000000000000000000", "network": "unknown"}));
                         
                         let account = account_info["account"].as_str().unwrap_or("0x0000000000000000000000000000000000000000").to_string();
                         let network = account_info["network"].as_str().unwrap_or("ethereum").to_string();
+                        
+                        console::log_1(&format!("Account: {}, Network: {}", account, network).into());
                         
                         on_wallet_connected.emit((account.clone(), network));
                         
@@ -93,6 +149,10 @@ pub fn wallet_connector(props: &WalletConnectorProps) -> Html {
                     Err(e) => {
                         let error_message = format!("Failed to connect to MetaMask: {:?}", e);
                         console::log_1(&e);
+                        console::log_1(&"MetaMask connection failed".into());
+                        
+                        // Show alert to user
+                        show_alert(&format!("Failed to connect to MetaMask. Please make sure MetaMask is installed and unlocked."));
                         
                         state.set(WalletConnectorState {
                             connecting: false,
@@ -119,18 +179,48 @@ pub fn wallet_connector(props: &WalletConnectorProps) -> Html {
                 success: None,
             });
             
+            // Check if Phantom is installed before attempting to connect
+            let solana_exists = check_js_object_exists("solana");
+            console::log_1(&format!("Solana exists: {}", solana_exists).into());
+            
+            if !solana_exists {
+                let error_msg = "Phantom wallet is not installed. Please install Phantom to continue.".to_string();
+                show_alert(&error_msg);
+                state.set(WalletConnectorState {
+                    connecting: false,
+                    error: Some(error_msg),
+                    success: None,
+                });
+                return;
+            }
+            
+            // Check if the connect function exists
+            let connect_function_exists = check_js_function_exists("connectToPhantom");
+            console::log_1(&format!("connectToPhantom function exists: {}", connect_function_exists).into());
+            
+            // Try to call the debug version first to see if there are any issues
+            let debug_function_exists = check_js_function_exists("connectToPhantomDebug");
+            if debug_function_exists {
+                console::log_1(&"Using debug version of connectToPhantom".into());
+            }
+            
             // Call the JavaScript function to connect to Phantom
+            console::log_1(&"Calling connect_to_phantom()".into());
             let promise = connect_to_phantom();
             
             wasm_bindgen_futures::spawn_local(async move {
+                console::log_1(&"Inside Phantom promise handler".into());
                 match wasm_bindgen_futures::JsFuture::from(promise).await {
                     Ok(js_value) => {
+                        console::log_1(&"Phantom connection successful".into());
                         // Convert the JavaScript object to a Rust string
                         let account_info = js_value.into_serde::<serde_json::Value>()
                             .unwrap_or_else(|_| serde_json::json!({"account": "11111111111111111111111111111111", "network": "solana"}));
                         
                         let account = account_info["account"].as_str().unwrap_or("11111111111111111111111111111111").to_string();
                         let network = account_info["network"].as_str().unwrap_or("solana").to_string();
+                        
+                        console::log_1(&format!("Account: {}, Network: {}", account, network).into());
                         
                         on_wallet_connected.emit((account.clone(), network));
                         
@@ -143,6 +233,10 @@ pub fn wallet_connector(props: &WalletConnectorProps) -> Html {
                     Err(e) => {
                         let error_message = format!("Failed to connect to Phantom: {:?}", e);
                         console::log_1(&e);
+                        console::log_1(&"Phantom connection failed".into());
+                        
+                        // Show alert to user
+                        show_alert(&format!("Failed to connect to Phantom. Please make sure Phantom is installed and unlocked."));
                         
                         state.set(WalletConnectorState {
                             connecting: false,

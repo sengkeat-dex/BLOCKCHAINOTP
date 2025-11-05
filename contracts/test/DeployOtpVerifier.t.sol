@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./utils/TestBase.sol";
+import "forge-std/Test.sol";
 import "../script/DeployOtpVerifier.s.sol";
 
-contract DeployOtpVerifierTest is TestBase {
+contract DeployOtpVerifierTest is Test {
     DeployOtpVerifier private deployer;
     address private issuer = address(0xBEEF);
     address private admin = address(0xCAFE);

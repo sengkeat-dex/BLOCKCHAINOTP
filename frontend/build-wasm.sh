@@ -12,7 +12,14 @@ echo "Building WASM..."
 cargo build --target wasm32-unknown-unknown --release
 
 echo "Running wasm-bindgen..."
-wasm-bindgen --target web --out-dir pkg target/wasm32-unknown-unknown/release/otp_frontend.wasm
+if command -v wasm-bindgen &> /dev/null
+then
+    wasm-bindgen --target web --out-dir pkg target/wasm32-unknown-unknown/release/otp_frontend.wasm
+else
+    echo "wasm-bindgen is not installed. Skipping this step."
+    echo "To install wasm-bindgen, run: cargo install wasm-bindgen-cli"
+    exit 1
+fi
 
 echo "Copying files to dist directory..."
 mkdir -p dist
@@ -20,5 +27,6 @@ cp pkg/* dist/
 cp index.html dist/
 cp styles.css dist/
 cp metamask.js dist/
+cp solana.js dist/
 
 echo "Build complete! You can now serve the dist directory with any HTTP server."

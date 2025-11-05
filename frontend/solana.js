@@ -84,6 +84,19 @@ window.isPhantomConnected = isPhantomConnected;
 window.getPhantomAccount = getPhantomAccount;
 window.signPhantomMessage = signPhantomMessage;
 
+// Also expose as global functions for debugging
+window.connectToPhantomDebug = async function() {
+    try {
+        console.log("Attempting to connect to Phantom...");
+        const result = await connectToPhantom();
+        console.log("Phantom connection result:", result);
+        return result;
+    } catch (error) {
+        console.error("Phantom connection error:", error);
+        throw error;
+    }
+};
+
 // Listen for account changes
 if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
     window.solana.on('accountChanged', function (publicKey) {

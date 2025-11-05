@@ -35,10 +35,9 @@ contract OtpVerifier {
     error EntryUsed(bytes32 requestId);
     error EntryExpired(bytes32 requestId, uint64 expiry);
     error AttemptsExceeded(bytes32 requestId);
-    error InvalidOtp(bytes32 requestId);
     error ActiveEntry(bytes32 requestId);
     error ZeroAddress();
-    error Paused();
+    error ContractPaused();
     error InvalidHash();
 
     modifier onlyIssuer() {
@@ -57,7 +56,7 @@ contract OtpVerifier {
     }
 
     modifier notPaused() {
-        if (paused) revert Paused();
+        if (paused) revert ContractPaused();
         _;
     }
 
@@ -85,9 +84,9 @@ contract OtpVerifier {
     function verify(bytes32 requestId, string calldata otp) external notPaused returns (bool) {
         OtpEntry storage entry = entries[requestId];
         if (entry.expiry == 0) revert UnknownRequest(requestId);
+        if (entry.attempts >= MAX_ATTEMPTS) revert AttemptsExceeded(requestId);
         if (entry.used) revert EntryUsed(requestId);
         if (block.timestamp > entry.expiry) revert EntryExpired(requestId, entry.expiry);
-        if (entry.attempts >= MAX_ATTEMPTS) revert AttemptsExceeded(requestId);
 
         bytes32 expected = _hashOtp(otp);
         if (expected != entry.hash) {
@@ -98,7 +97,7 @@ contract OtpVerifier {
             if (entry.attempts >= MAX_ATTEMPTS) {
                 emit OtpLocked(requestId);
             }
-            revert InvalidOtp(requestId);
+            return false;
         }
 
         entry.used = true;

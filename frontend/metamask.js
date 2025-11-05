@@ -91,6 +91,19 @@ window.isMetaMaskConnected = isMetaMaskConnected;
 window.getCurrentAccount = getCurrentAccount;
 window.signMessage = signMessage;
 
+// Also expose as global functions for debugging
+window.connectToMetaMaskDebug = async function() {
+    try {
+        console.log("Attempting to connect to MetaMask...");
+        const result = await connectToMetaMask();
+        console.log("MetaMask connection result:", result);
+        return result;
+    } catch (error) {
+        console.error("MetaMask connection error:", error);
+        throw error;
+    }
+};
+
 // Listen for account changes
 if (typeof window.ethereum !== 'undefined') {
     window.ethereum.on('accountsChanged', function (accounts) {

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./utils/TestBase.sol";
+import "forge-std/Test.sol";
 import "../src/OtpVerifier.sol";
 
-contract SecurityLayerTest is TestBase {
+contract SecurityLayerTest is Test {
     OtpVerifier private verifier;
     address private issuer = address(0xBEEF);
     address private admin = address(this);
-    address private attacker = address(0xATTACK);
+    address private attacker = address(0xa710CA71a710ca71A710cA71a710Ca71A710ca71);
 
     function setUp() public {
         verifier = new OtpVerifier(issuer, admin);
@@ -26,8 +26,8 @@ contract SecurityLayerTest is TestBase {
 
         // Try to brute force with wrong OTPs
         for (uint8 i = 0; i < 3; i++) {
-            vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
-            verifier.verify(requestId, "000000");
+            bool invalid = verifier.verify(requestId, "000000");
+            assertTrue(!invalid, "Brute force attempt should fail");
         }
 
         // After 3 attempts, should be locked
@@ -90,8 +90,8 @@ contract SecurityLayerTest is TestBase {
         // Attacker tries to verify (should work since verification doesn't require special permissions)
         // But with wrong OTP, it should fail
         vm.prank(attacker);
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
-        verifier.verify(requestId, "000000");
+        bool invalidAttempt = verifier.verify(requestId, "000000");
+        assertTrue(!invalidAttempt, "Attacker verification should fail");
     }
 
     // Test emergency pause functionality
@@ -105,11 +105,11 @@ contract SecurityLayerTest is TestBase {
 
         // Try to set OTP while paused
         vm.prank(issuer);
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ContractPaused.selector));
         verifier.setOtp(requestId, correctHash, expiry);
 
         // Try to verify while paused
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ContractPaused.selector));
         verifier.verify(requestId, "123456");
 
         // Admin unpauses the contract

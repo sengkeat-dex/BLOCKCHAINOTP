@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./utils/TestBase.sol";
+import "forge-std/Test.sol";
 import "../src/OtpVerifier.sol";
 
-contract OtpVerifierTest is TestBase {
+contract OtpVerifierTest is Test {
     OtpVerifier private verifier;
     address private issuer = address(0xBEEF);
     address private admin = address(this);
@@ -29,9 +29,9 @@ contract OtpVerifierTest is TestBase {
         bool ok = verifier.verify(requestId, "123456");
         assertTrue(ok, "verification should succeed");
 
-        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
-        assertTrue(entry.used, "entry should be marked used");
-        assertEq(entry.attempts, 0, "attempts should stay zero");
+        (, , uint8 attemptsAfterSuccess, bool usedAfterSuccess) = verifier.entries(requestId);
+        assertTrue(usedAfterSuccess, "entry should be marked used");
+        assertEq(attemptsAfterSuccess, 0, "attempts should stay zero");
     }
 
     function testSetOtpRequiresIssuer() public {
@@ -103,12 +103,12 @@ contract OtpVerifierTest is TestBase {
         vm.prank(issuer);
         verifier.setOtp(requestId, _hash("123456"), expiry);
 
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
-        verifier.verify(requestId, "000000");
+        bool invalidAttempt = verifier.verify(requestId, "000000");
+        assertTrue(!invalidAttempt, "verification should fail for wrong otp");
 
-        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
-        assertEq(entry.attempts, 1, "attempt count should increase");
-        assertTrue(!entry.used, "entry should remain unused");
+        (, , uint8 attemptsAfterFailure, bool usedAfterFailure) = verifier.entries(requestId);
+        assertEq(attemptsAfterFailure, 1, "attempt count should increase");
+        assertTrue(!usedAfterFailure, "entry should remain unused");
     }
 
     function testVerifyLocksAfterMaxAttempts() public {
@@ -120,8 +120,8 @@ contract OtpVerifierTest is TestBase {
 
         uint8 maxAttempts = verifier.MAX_ATTEMPTS();
         for (uint8 i = 0; i < maxAttempts; i++) {
-            vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
-            verifier.verify(requestId, "111111");
+            bool invalid = verifier.verify(requestId, "111111");
+            assertTrue(!invalid, "invalid otp attempt should fail");
         }
 
         vm.expectRevert(abi.encodeWithSelector(OtpVerifier.AttemptsExceeded.selector, requestId));
@@ -137,9 +137,9 @@ contract OtpVerifierTest is TestBase {
         verifier.verify(requestId, "123456");
 
         verifier.cleanup(requestId);
-        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
-        assertEq(entry.hash, bytes32(0), "entry hash should reset");
-        assertEq(uint256(entry.expiry), 0, "expiry should reset");
+        (bytes32 hashAfterCleanup, uint64 expiryAfterCleanup, , ) = verifier.entries(requestId);
+        assertEq(hashAfterCleanup, bytes32(0), "entry hash should reset");
+        assertEq(uint256(expiryAfterCleanup), 0, "expiry should reset");
     }
 
     function testCleanupAfterExpiry() public {
@@ -151,8 +151,8 @@ contract OtpVerifierTest is TestBase {
 
         vm.warp(block.timestamp + 120);
         verifier.cleanup(requestId);
-        OtpVerifier.OtpEntry memory entry = verifier.entries(requestId);
-        assertEq(entry.hash, bytes32(0), "entry hash should reset");
+        (bytes32 hashAfterExpiryCleanup, , , ) = verifier.entries(requestId);
+        assertEq(hashAfterExpiryCleanup, bytes32(0), "entry hash should reset");
     }
 
     function testCleanupRevertsWhenActive() public {
@@ -173,10 +173,10 @@ contract OtpVerifierTest is TestBase {
         uint64 expiry = uint64(block.timestamp + 60);
 
         vm.prank(issuer);
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ContractPaused.selector));
         verifier.setOtp(requestId, _hash("123456"), expiry);
 
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ContractPaused.selector));
         verifier.verify(requestId, "123456");
     }
 
@@ -211,8 +211,10 @@ contract OtpVerifierTest is TestBase {
 
         vm.assume(keccak256(abi.encodePacked("OTP:v1", wrongOtp)) != correctHash);
 
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.InvalidOtp.selector, requestId));
-        verifier.verify(requestId, wrongOtp);
+        bool result = verifier.verify(requestId, wrongOtp);
+        assertTrue(!result, "verification should fail for wrong otp");
+        (, , uint8 attemptsAfterFailure, ) = verifier.entries(requestId);
+        assertEq(attemptsAfterFailure, 1, "first wrong attempt should increment counter");
     }
 
     function _hash(string memory otp) internal pure returns (bytes32) {

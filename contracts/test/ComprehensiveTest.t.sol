@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./utils/TestBase.sol";
+import "forge-std/Test.sol";
 import "../src/OtpVerifier.sol";
 import "../script/DeployOtpVerifier.s.sol";
 
-contract ComprehensiveTest is TestBase {
+contract ComprehensiveTest is Test {
     DeployOtpVerifier private deployer;
     OtpVerifier private verifier;
     address private issuer = address(0xBEEF);
@@ -102,10 +102,10 @@ contract ComprehensiveTest is TestBase {
         uint64 expiry = uint64(block.timestamp + 60);
 
         vm.prank(issuer);
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ContractPaused.selector));
         verifier.setOtp(requestId, hash, expiry);
 
-        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.Paused.selector));
+        vm.expectRevert(abi.encodeWithSelector(OtpVerifier.ContractPaused.selector));
         verifier.verify(requestId, "123456");
 
         // Admin unpauses the contract
