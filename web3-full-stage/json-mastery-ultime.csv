@@ -1,0 +1,218 @@
+Category,Component,Description,Valid Values / Syntax,Example,Notes / Constraints
+"Data Types","null","The intentional absence of any object value","null","null","Case-sensitive"
+"Data Types","boolean","True or false value","true | false","true","Case-sensitive"
+"Data Types","number","Integer or floating-point (IEEE-754 double)","[-+]?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?","3.14, -42, 6.022e23","No leading zeros, no octal/hex literals"
+"Data Types","string","Unicode text in double quotes","\"<any Unicode except \" \\ or control chars>\"","\"Hello \\n World\"","Escape sequences: \\", \\, \/, \b, \f, \n, \r, \t, \uXXXX"
+"Data Types","array","Ordered list of values","[ <value>, <value>, ... ]","[1, \"two\", null, true]","Trailing comma NOT allowed"
+"Data Types","object","Unordered collection of key-value pairs","{ \"<string>\": <value>, ... }","{\"name\": \"Ada\", \"age\": 31}","Keys must be strings; duplicate keys undefined behavior"
+"String Escapes","backslash","Literal backslash","\\\\","\"C:\\\\Windows\"",""
+"String Escapes","quote","Literal double quote","\\\"","\"He said \\\"hi\\\"\"",""
+"String Escapes","solidus","Literal forward slash","\/","\"api\\/v1\"","Optional but allowed"
+"String Escapes","backspace","Backspace character","\\b","\"line1\\bline2\"",""
+"String Escapes","formfeed","Form-feed","\\f","\"page1\\fpage2\"",""
+"String Escapes","newline","Line feed","\\n","\"first\\nsecond\"",""
+"String Escapes","carriage return","Carriage return","\\r","\"old\\rnew\"",""
+"String Escapes","tab","Horizontal tab","\\t","\"col1\\tcol2\"",""
+"String Escapes","unicode","Unicode code point","\\uXXXX (XXXX = 4 hex digits)","\"\\u03B1\" → α","Surrogate pairs for >U+FFFF"
+"Number Sub-types","integer","Whole number","[-+]?[0-9]+","0, -7, 42",""
+"Number Sub-types","float","Decimal number","[-+]?[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?","3.14, -0.5, 1e-10",""
+"Number Sub-types","exponent","Scientific notation","<mantissa>e<exponent>","6.022e23",""
+"Array Features","heterogeneous","Mix of any types","[1, \"text\", null, {}]","[true, 3.14, [1,2]]",""
+"Array Features","empty","No elements","[]","[]",""
+"Array Features","nested","Array inside array","[[...]]","[[1,2],[3,4]]",""
+"Object Features","key-value pair","String key + any value","\"key\": <value>","\"id\": 123",""
+"Object Features","empty","No members","{}","{}",""
+"Object Features","nested","Object inside object","{ \"inner\": { ... } }","{\"user\": {\"name\": \"Bob\"}}",""
+"Object Features","duplicate keys","Behavior undefined","{\"a\":1, \"a\":2}","{\"a\":2} (last wins in many parsers)","Strict JSON forbids duplicates"
+"Whitespace","allowed","Between any tokens","space, tab, \r, \n","{ \"a\" : 1 }","No whitespace inside numbers/strings"
+"Comments","not supported","JSON has no comment syntax","","/* not allowed */","Use a separate field or external docs"
+"Root Element","any value","Object, array, string, number, boolean, null","any","{\"data\": []} or [1,2,3]",""
+"Encoding","UTF-8/16/32","Must be valid Unicode","UTF-8 recommended","BOM optional but discouraged",""
+"File Extension",".json","Standard extension","","mydata.json",""
+"MIME Type","application/json","Official media type","","",""
+"Standards","RFC 8259","Current JSON spec (2017)","","https://www.rfc-editor.org/rfc/rfc8259.html",""
+"Standards","ECMA-404","Equivalent standard","Same as RFC 8259","https://www.ecma-international.org/publications-and-standards/standards/ecma-404/",""
+"Common Pitfalls","trailing comma","Invalid in JSON","[1,2,] → error","Remove comma",""
+"Common Pitfalls","single quotes","Invalid","{'a':1} → error","Use double quotes",""
+"Common Pitfalls","NaN/Infinity","Invalid","[NaN] → error","Use null or string",""
+"Common Pitfalls","undefined","Invalid","undefined → error","Omit or use null",""
+"Common Pitfalls","Date objects","No native type","Use ISO 8601 string","\"2025-11-01T12:00:00Z\"",""
+"Examples","minimal object","{\"key\":value}","{\"x\":1}",""
+"Examples","full document","Complex nested","{\"users\":[{\"id\":1,\"active\":true}],\"meta\":{\"count\":1}}",""
+"JSON Schema","schema keyword","$schema","Declares schema version","\"$schema\": \"https://json-schema.org/draft/2020-12/schema\"","Optional but recommended"
+"JSON Schema","title","Human-readable title","\"title\": \"User Profile\"","\"title\": \"Product API\"",""
+"JSON Schema","description","Description of data","\"description\": \"A user object\"","\"description\": \"List of products\"",""
+"JSON Schema","type","Data type constraint","\"type\": \"object\" | \"array\" | \"string\" | \"number\" | \"integer\" | \"boolean\" | \"null\"","\"type\": \"object\"",""
+"JSON Schema","properties","Object properties","\"properties\": { \"name\": { ... } }","\"properties\": { \"age\": { \"type\": \"integer\" } }",""
+"JSON Schema","required","Mandatory keys","\"required\": [\"id\", \"name\"]","\"required\": [\"email\"]",""
+"JSON Schema","items","Array item schema","\"items\": { \"type\": \"string\" }","\"items\": { \"type\": \"object\", \"properties\": { ... } }",""
+"JSON Schema","minLength / maxLength","String length","\"minLength\": 3, \"maxLength\": 50","\"minLength\": 1",""
+"JSON Schema","pattern","Regex constraint","\"pattern\": \"^[A-Z]{3}-[0-9]{4}$\"","\"pattern\": \"^\\d{3}-\\d{2}-\\d{4}$\" → SSN",""
+"JSON Schema","minimum / maximum","Number bounds","\"minimum\": 0, \"maximum\": 100","\"minimum\": 18",""
+"JSON Schema","enum","Allowed values","\"enum\": [\"active\", \"inactive\", \"pending\"]","\"enum\": [1, 2, 3]",""
+"JSON Schema","format","Semantic validation","\"format\": \"email\" | \"uuid\" | \"date-time\" | \"uri\" | \"ipv4\"","\"format\": \"date-time\"","Not enforced by all validators"
+"JSON Schema","default","Default value","\"default\": \"guest\"","\"default\": 0","Not part of validation"
+"JSON Schema","examples","Sample data","\"examples\": [ { \"id\": 1 } ]","\"examples\": [ \"user@example.com\" ]",""
+"JSON Schema","$ref","Reference another schema","\"$ref\": \"#/components/schemas/User\"","\"$ref\": \"common.json#/definitions/Address\"","Supports JSON Pointer"
+"JSON Schema","allOf","All schemas must pass","\"allOf\": [ { ... }, { ... } ]","Inheritance pattern",""
+"JSON Schema","anyOf","At least one must pass","\"anyOf\": [ { \"type\": \"string\" }, { \"type\": \"null\" } ]","Optional string",""
+"JSON Schema","oneOf","Exactly one must pass","\"oneOf\": [ { \"type\": \"number\" }, { \"type\": \"string\" } ]","Polymorphism",""
+"JSON Schema","not","Must NOT match","\"not\": { \"type\": \"null\" }","Cannot be null",""
+"JSON Schema Validation","AJV","Popular JS validator","npm install ajv","","Fast, supports drafts"
+"JSON Schema Validation","jsonschema (Python)","Python validator","pip install jsonschema","",""
+"JSON Schema Validation","Validation Result","errors array","[ { keyword, dataPath, message } ]","[ { \"keyword\": \"required\", \"dataPath\": \".email\", \"message\": \"is required\" } ]",""
+"Error Handling","Parsing Error","Invalid JSON syntax","JSON.parse() throws SyntaxError","try { JSON.parse(input) } catch (e) { ... }","Common: missing quotes, trailing comma"
+"Error Handling","Validation Error","Schema mismatch","validator.errors → array","[ { instancePath: '/age', message: 'must be integer' } ]","Use for API input validation"
+"Error Handling","HTTP 400","Bad Request","Malformed JSON or validation fail","","Client error"
+"Error Handling","HTTP 422","Unprocessable Entity","Valid JSON, invalid semantically","","Preferred for schema errors"
+"Error Handling","Error Response Format","Standardized error","{ \"error\": { \"code\": \"VALIDATION_ERROR\", \"message\": \"...\", \"details\": [...] } }","See example below",""
+"HTTP Request","Content-Type","Request header","application/json","","Required for JSON body"
+"HTTP Request","Accept","Desired response type","application/json","","Optional"
+"HTTP Request","POST Body","JSON payload","{ \"name\": \"John\" }","See full example",""
+"HTTP Request","GET with Query","JSON not in body","?filter={...} → URL-encoded","Use POST for complex filters",""
+"HTTP Response","200 OK","Success with JSON","{ \"data\": [...] }","See example",""
+"HTTP Response","201 Created","Resource created","{ \"id\": 123, \"status\": \"created\" }",""
+"HTTP Response","400 Bad Request","Invalid JSON","{ \"error\": \"Invalid JSON syntax\" }",""
+"HTTP Response","422 Unprocessable Entity","Validation failed","{ \"error\": \"Validation failed\", \"details\": [ ... ] }",""
+"HTTP Response","Content-Type","Response header","application/json; charset=utf-8","","Always set"
+"Best Practices","Use ISO 8601","For dates","\"2025-11-01T12:00:00Z\"","\"2025-11-01T12:00:00+05:30\"",""
+"Best Practices","Snake_case or camelCase","Key naming","\"user_id\" or \"userId\"","Be consistent",""
+"Best Practices","Avoid deep nesting",">5 levels risky","{ a: { b: { c: ... } } }","Flatten or paginate",""
+"Best Practices","Use null, not empty","For missing values","\"middle_name\": null","Not \"\" or omit",""
+"Best Practices","Paginated APIs","Use limit/offset or cursor","{ \"data\": [], \"next_cursor\": \"abc\" }",""
+"Example: JSON Schema","User Schema","Full validation schema","{
+  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",
+  \"title\": \"User\",
+  \"type\": \"object\",
+  \"properties\": {
+    \"id\": { \"type\": \"integer\", \"minimum\": 1 },
+    \"name\": { \"type\": \"string\", \"minLength\": 1 },
+    \"email\": { \"type\": \"string\", \"format\": \"email\" },
+    \"status\": { \"type\": \"string\", \"enum\": [\"active\", \"inactive\"] },
+    \"created_at\": { \"type\": \"string\", \"format\": \"date-time\" }
+  },
+  \"required\": [\"id\", \"name\", \"email\"],
+  \"additionalProperties\": false
+}","Enforce strict structure",""
+"Example: HTTP Request","POST /users","Create user","POST /users
+Content-Type: application/json
+
+{
+  \"name\": \"Alice\",
+  \"email\": \"alice@example.com\",
+  \"status\": \"active\"
+}",""
+"Example: HTTP Response Success","201 Created","User created","HTTP/1.1 201 Created
+Content-Type: application/json
+
+{
+  \"id\": 101,
+  \"name\": \"Alice\",
+  \"email\": \"alice@example.com\",
+  \"status\": \"active\",
+  \"created_at\": \"2025-11-01T10:00:00Z\"
+}",""
+"Example: HTTP Response Error","422 Validation","Missing email","HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/json
+
+{
+  \"error\": {
+    \"code\": \"VALIDATION_ERROR\",
+    \"message\": \"Validation failed\",
+    \"details\": [
+      {
+        \"field\": \"email\",
+        \"issue\": \"is required\"
+      }
+    ]
+  }
+}",""
+"Example: Error Handling (JS)","try/catch + AJV","Full validation","const Ajv = require('ajv');
+const ajv = new Ajv({ allErrors: true });
+const validate = ajv.compile(schema);
+
+if (!validate(data)) {
+  console.log(validate.errors);
+  // → [{ keyword: 'required', instancePath: '.email', message: 'is required' }]
+}",""
+"Tools","JSONLint","Online validator","jsonlint.com","",""
+"Tools","JSON Schema Validator","validator.json-schema.org","",""
+"Tools","Postman","API testing","postman.com","","Supports schema validation"
+"Tools","curl","CLI testing","curl -X POST -H \"Content-Type: application/json\" -d '{...}' URL","",""
+"Advanced Formats","JSON5","Superset of JSON with relaxed syntax","https://json5.org","{ unquoted: 'keys', trailingComma: true, }","Supports comments, single quotes, trailing commas, hex, Infinity, NaN"
+"Advanced Formats","JSONC","JSON with Comments (VS Code, TypeScript)","// comment\n{ \"a\": 1 }","Used in config files: tsconfig.json, package.json"
+"Advanced Formats","HJSON","Human JSON – comments, unquoted keys, multiline strings","https://hjson.github.io","{\n  # comment\n  name: John\n  greeting: \"\"\"\n  Hello\n  World\n  \"\"\"\n}","Great for config files"
+"Advanced Formats","JSONL / NDJSON","Newline-Delimited JSON","http://ndjson.org","{\"id\":1}\n{\"id\":2}\n","Streaming logs, big data pipelines, ETL"
+"Advanced Formats","JSON Text Sequences","RFC 7464 – JSON records with RS separator","\x1E{...}\n\x1E{...}\n","Safe streaming over text protocols"
+"Advanced Formats","JSON Patch","RFC 6902 – Operations to modify JSON","[ { \"op\": \"replace\", \"path\": \"/name\", \"value\": \"Jane\" } ]","Used in REST APIs for partial updates"
+"Advanced Formats","JSON Merge Patch","RFC 7386 – Simpler patch format","{ \"name\": null, \"age\": 30 }","Null removes field; simpler than JSON Patch"
+"Binary JSON","CBOR","Concise Binary Object Representation (RFC 8949)","Binary (0xA2...)",{"name":"Ada"},"50% smaller than JSON, used in IoT, WebAuthn"
+"Binary JSON","MessagePack","Binary JSON-like format","Binary (0x82...)",{"a":1,"b":2},"Faster parsing, smaller than JSON"
+"Binary JSON","BSON","Binary JSON (MongoDB)","Binary with types","{ \"_id\": ObjectId(...) }","Supports Date, Binary, Regex"
+"Security","JWT","JSON Web Token (RFC 7519)","header.payload.signature","eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c","Used in OAuth, OpenID Connect"
+"Security","JWS","JSON Web Signature","Compact or JSON format","{ \"protected\": \"...\", \"payload\": \"...\", \"signature\": \"...\" }","Signed JSON"
+"Security","JWE","JSON Web Encryption","Encrypted JWT","{ \"protected\": \"...\", \"encrypted_key\": \"...\", ... }","Encrypted JSON"
+"Security","JSON Content Rules","RFC 7493 – I-JSON","Strict subset of JSON","No NaN, Infinity, comments","For interoperability"
+"Performance","Gzip","Compression (RFC 1952)","Content-Encoding: gzip","Smaller payload over HTTP",""
+"Performance","Brotli","Better compression than gzip","Content-Encoding: br","Google, Cloudflare, browsers",""
+"Performance","Zstandard (zstd)","High compression + fast","Content-Encoding: zstd","Facebook, Kafka, modern CDNs",""
+"Streaming","Server-Sent Events (SSE)","JSON over text/event-stream","data: {\"temp\": 23.5}\n\n","Real-time dashboards"
+"Streaming","WebSocket","Bidirectional JSON","{\"type\":\"update\",\"data\":{...}}","Chat, live feeds"
+"Streaming","gRPC with JSON","JSON over HTTP/2 (gRPC-JSON)","application/grpc+json","Microservices"
+"Data Query","jq","Command-line JSON processor","jq '.users[] | select(.active)'","Powerful filtering, transformation"
+"Data Query","JSONPath","XPath for JSON","$.store.book[0].title","Used in tools, APIs"
+"Data Query","JSONata","Advanced query & transform","account.(order.product.price) | $sum()","Used in Node-RED, n8n"
+"Data Query","JMESPath","JSON search language","search('users[?age > `30`].name', data)","AWS CLI, Terraform"
+"Tooling","jsonlint","CLI validator","jsonlint file.json","",""
+"Tooling","prettier","Auto-formatter","prettier --write data.json","",""
+"Tooling","jsondiffpatch","Diff & patch","diff = jsondiffpatch.diff(a,b)","Visual diffs, undo/redo"
+"Tooling","jsoneditor","GUI editor","jsoneditoronline.org","",""
+"Tooling","quicktype","Generate types from JSON","quicktype -l ts input.json","TS, Kotlin, Rust, Go, etc."
+"Testing","JSON Server","Mock REST API from JSON file","json-server db.json","GET /posts → returns db.json",""
+"Testing","WireMock","Mock server with JSON stubs","wiremock --port 8080","Java, standalone JAR",""
+"Testing","Schemathesis","Property-based API testing","schemathesis run openapi.yaml","Fuzzing with OpenAPI"
+"Testing","Dredd","API blueprint testing","dredd api.md http://localhost:3000","",""
+"Serialization Libraries","JavaScript","JSON.parse / JSON.stringify","Native","JSON.stringify(obj, null, 2)",""
+"Serialization Libraries","Python","json module","import json","json.dumps(data, indent=2)",""
+"Serialization Libraries","Java","Jackson, Gson","@JsonProperty","objectMapper.writeValueAsString(obj)",""
+"Serialization Libraries","Go","encoding/json","json.Marshal","json.MarshalIndent(v, "", "  ")",""
+"Serialization Libraries","Rust","serde_json","#[derive(Serialize)]","serde_json::to_string(&value)?",""
+"Serialization Libraries",".NET","System.Text.Json, Newtonsoft.Json","JsonSerializer.Serialize(obj)","High performance in .NET 6+",""
+"Real-World Standards","OpenAPI","API description in JSON/YAML","openapi: 3.1.0","paths, components, schemas",""
+"Real-World Standards","AsyncAPI","Event-driven API spec","asyncapi: 2.6.0","channels, messages","Kafka, MQTT"
+"Real-World Standards","GraphQL","Query language (JSON response)","{ hero { name } }","Predictable responses",""
+"Real-World Standards","GeoJSON","Geospatial data","{ \"type\": \"Point\", \"coordinates\": [125.6, 10.1] }","Maps, GIS"
+"Real-World Standards","FHIR","Healthcare data (JSON/XML)","resourceType: \"Patient\"","HL7 standard",""
+"Real-World Standards","Activity Streams 2.0","Social activity feed","{ \"@context\": \"...\", \"type\": \"Like\", \"actor\": { ... } }","Mastodon, etc."
+"Versioning","Semantic Versioning in JSON","\"version\": \"1.2.3\"","Follows SemVer",""
+"Versioning","API Version in URL/Path/Header","/v1/users, API-Version: 1","Avoid breaking changes",""
+"Versioning","Schema Evolution","Add optional fields, never remove","\"newField\"?: string","Backward/forward compatible"
+"Internationalization","i18n in JSON","{ \"en\": \"Hello\", \"es\": \"Hola\" }","Locale files",""
+"Internationalization","Unicode Support","Full UTF-8","\"name\": \"José\"","Always use UTF-8",""
+"Internationalization","CLDR","Common Locale Data Repository","Use language tags: \"en-US\"",""
+"Observability","Structured Logging","JSON log lines","{\"level\":\"info\",\"msg\":\"user login\",\"user_id\":123}","ELK, Splunk"
+"Observability","Tracing","W3C Trace Context in JSON","\"traceparent\": \"00-4bf92f...\"","OpenTelemetry"
+"Observability","Metrics","JSON over HTTP","{ \"cpu\": 0.65, \"memory\": 1024 }","Prometheus exposition"
+"File Formats","Parquet + JSON fallback","Columnar + JSON for metadata","metadata.json alongside .parquet","Big data lakes"
+"File Formats","ORC","Optimized Row Columnar","Similar to Parquet",""
+"File Formats","Avro + JSON schema","Schema-embedded binary","avro.json defines schema","Kafka, Schema Registry"
+"Transformation","jq scripts","Reusable filters","def active: select(.status == \"active\");","Modular processing"
+"Transformation","JSON to CSV","jq -r '(keys_unsorted), (.[] | [.[0],.[1]]) | @csv'","Export to spreadsheet"
+"Transformation","CSV to JSON","jq -R -s 'split(\"\\n\") | map(split(\",\"))'","Import data"
+"Edge Cases","Very Large Numbers","Use string for >53-bit integers","\"id\": \"9007199254740993\"","Avoid precision loss"
+"Edge Cases","Circular References","Not allowed in JSON","JSON.stringify() → TypeError","Use $ref or IDs"
+"Edge Cases","Precision Loss","IEEE 754 double","1.1 + 0.2 ≠ 1.3 exactly","Use decimal libraries"
+"Best Practice","Use application/json; charset=utf-8","Always specify charset","","",""
+"Best Practice","Validate on Ingress","Reject invalid JSON early","","400 Bad Request",""
+"Best Practice","Use POST for Complex Queries","Avoid URL length limits","","",""
+"Best Practice","Paginate Large Arrays","limit, offset, cursor","\"next\": \"cursor123\"",""
+"Best Practice","Use Hypermedia (HATEOAS)","Include _links","\"_links\": { \"self\": { \"href\": \"/users/1\" } }","REST maturity"
+"Example: JSON5","Config file","Unquoted keys, comments","{\n  // API settings\n  host: localhost,\n  port: 3000,\n  debug: true\n}","package.json, .env.json"
+"Example: NDJSON","Log stream","One JSON per line","{\"time\":\"2025-11-01T10:00:00Z\",\"level\":\"info\",\"msg\":\"start\"}\n{\"time\":\"2025-11-01T10:00:01Z\",\"level\":\"error\",\"msg\":\"fail\"}\n","Fluentd, Logstash"
+"Example: JSON Patch","Update user","Replace name, remove age","[\n  { \"op\": \"replace\", \"path\": \"/name\", \"value\": \"Jane\" },\n  { \"op\": \"remove\", \"path\": \"/age\" }\n]","PATCH /users/1"
+"Example: JWT","Auth token","Header.Payload.Signature","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiSm9obiJ9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ","Authorization: Bearer <token>"
+"Example: jq","Extract names","Filter active users","cat users.json | jq '.[] | select(.active) | .name'","[\"Alice\",\"Bob\"]"
+"Example: OpenAPI","Path with schema","GET /users/{id}","paths:\n  /users/{id}:\n    get:\n      parameters:\n        - name: id\n          in: path\n          required: true\n          schema:\n            type: integer",""
+"Example: Structured Log","JSON log entry","With trace ID","{\"@timestamp\":\"2025-11-01T10:00:00Z\",\"level\":\"info\",\"message\":\"login\",\"user_id\":123,\"trace_id\":\"abc123\"}",""
+"Tool: quicktype","Generate TypeScript","From JSON sample","quicktype -s schema input.json -o User.ts","interface User { id: number; name: string; }",""
+"Tool: json-server","Mock API","db.json → REST","{\n  \"posts\": [ { \"id\": 1, \"title\": \"Hello\" } ]\n}","GET /posts/1 → 200 OK"
